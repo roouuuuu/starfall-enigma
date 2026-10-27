@@ -52,6 +52,7 @@ export type SiteContext = {
   settings: Record<string, string>;
   user: SiteUser | null;
   csrfToken: string;
+  sessionHash: string;
   wishlistIds: number[];
   t: (key: string, vars?: Record<string, string | number>) => any;
   money: (cents: number) => string;
@@ -154,6 +155,7 @@ export const getSiteContext = cache(async (): Promise<SiteContext> => {
     settings,
     user,
     csrfToken,
+    sessionHash: raw ? hashToken(raw) : '',
     wishlistIds,
     t,
     money: (cents: number) => formatMoney(Number(cents || 0), currency, exchangeRate),

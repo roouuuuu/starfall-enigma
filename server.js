@@ -27,7 +27,12 @@ const NEXT_PATHS = [
   /^\/shop\/?$/,
   /^\/shop\/[^/]+\/?$/,
   /^\/product\/[^/]+\/?$/,
-  /^\/wishlist\/?$/
+  /^\/wishlist\/?$/,
+  /^\/checkout\/?$/,
+  /^\/order\/[^/]+\/?$/,
+  /^\/login\/?$/,
+  /^\/register\/?$/,
+  /^\/account\/?$/
 ];
 
 const SESSION_COOKIE_OPTIONS = {

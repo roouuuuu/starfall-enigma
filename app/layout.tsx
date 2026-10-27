@@ -27,6 +27,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const headerStore = await headers();
   const nonce = headerStore.get('x-se-nonce') || '';
 
+  const search = new URLSearchParams(site.currentUrl.split('?')[1] || '');
+  const orderPlaced = page.pageKey === 'order' && search.get('placed') === '1';
+  const checkoutShell = page.pageKey === 'checkout';
+
   const clientState = {
     lang: site.lang,
     currency: site.currency,
@@ -44,7 +48,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     wishlistIds: site.wishlistIds,
     strings: site.clientStrings,
     page: page.pageKey,
-    orderPlaced: false,
+    orderPlaced,
     routes: {
       shop: '/shop',
       checkout: '/checkout',
@@ -73,15 +77,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         data-page={page.pageKey}
         data-currency={site.currency}
         data-lang={site.lang}
-        data-clear-cart="0"
+        data-clear-cart={orderPlaced ? '1' : '0'}
       >
         <a className="skip-link" href="#main-content">
           {site.lang === 'id' ? 'Lewati ke konten' : 'Skip to content'}
         </a>
-        <SiteHeader site={site} page={page} />
+        {checkoutShell ? null : <SiteHeader site={site} page={page} />}
         {children}
-        <SiteFooter site={site} />
-        <Overlays site={site} />
+        {checkoutShell ? null : <SiteFooter site={site} />}
+        {checkoutShell ? null : <Overlays site={site} />}
         <script
           nonce={nonce}
           dangerouslySetInnerHTML={{ __html: `window.SE = ${safeJson(clientState)};` }}
