@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "description": "STARFALL ENIGMA — bilingual gothic-luxury apparel commerce experience with admin inventory and finance.",
-  "type": "commonjs",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js",
+    "start": "node server.js",
+    "dev": "node server.js",
+    "build": "next build",
     "seed": "node scripts/seed.js",
     "seed:reset": "node scripts/seed.js --reset",
     "assets": "node scripts/generate-assets.js",
@@ -18,6 +18,16 @@
   },
   "dependencies": {
     "ejs": "^3.1.10",
-    "express": "^5.3.0"
+    "express": "^5.3.0",
+    "next": "^16.4.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^7.0.2"
   }
 }

@@ -3,7 +3,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const PUBLIC_DIR = path.join(__dirname, '..', 'public');
+const ROOT = path.resolve(process.env.STARFALL_ROOT || process.cwd());
+const PUBLIC_DIR = path.join(ROOT, 'public');
 const VERSIONED_ROOTS = ['css', 'js', 'assets/fonts'];
 
 function newestMtime(dir) {

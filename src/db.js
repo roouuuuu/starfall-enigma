@@ -2,9 +2,11 @@
 
 const fs = require('fs');
 const path = require('path');
-const { DatabaseSync } = require('node:sqlite');
+const { DatabaseSync } = process.getBuiltinModule('node:sqlite');
 
-const ROOT = path.resolve(__dirname, '..');
+// process.cwd() keeps this module working when Next bundles it, because a
+// bundled __dirname no longer points at the repository.
+const ROOT = path.resolve(process.env.STARFALL_ROOT || process.cwd());
 const DEFAULT_DB_PATH = path.join(ROOT, 'data', 'starfall.sqlite');
 let instance = null;
 let instancePath = null;
@@ -26,7 +28,7 @@ function openDatabase(dbPath) {
 }
 
 function applySchema(db) {
-  const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
+  const schema = fs.readFileSync(path.join(ROOT, 'src', 'schema.sql'), 'utf8');
   db.exec(schema);
 }
 

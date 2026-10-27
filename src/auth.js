@@ -189,6 +189,7 @@ module.exports = {
   deleteSessionByHash,
   clearSessionCookie,
   cleanupSessions,
+  getSessionUser,
   sessionMiddleware,
   requireAuth,
   requireAdmin,
