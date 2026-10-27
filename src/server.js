@@ -12,6 +12,7 @@ const { resolveAdminSlug } = require('./admin-access');
 const { AppError, parseCookies, appendCookie, cookie, safeRedirect, cleanText, addUtm, isValidHttpUrl, escapeXml } = require('./utils');
 const { normalizeLanguage, normalizeCurrency } = require('./i18n');
 const { renderNotFound } = require('./routes/pages');
+const { mountLiveReload } = require('./live-reload');
 
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const PORT = Number(process.env.PORT || 3000);
@@ -65,7 +66,22 @@ function createApp(options = {}) {
   cleanupSessions(db);
 
   app.use(securityHeaders);
-  app.use(express.static(PUBLIC_DIR, { index: false, maxAge: '1h' }));
+  app.use(express.static(PUBLIC_DIR, {
+    index: false,
+    etag: true,
+    // Revalidate on every load so a changed stylesheet or script is picked up
+    // without a hard refresh. Unchanged files still answer 304 with no body.
+    maxAge: 0,
+    setHeaders(res) {
+      res.setHeader('Cache-Control', 'no-cache');
+    }
+  }));
+
+  const liveReload = options.liveReload !== undefined
+    ? Boolean(options.liveReload)
+    : process.env.NODE_ENV !== 'production';
+  app.locals.devReload = liveReload;
+  if (liveReload) app.set('liveReload', mountLiveReload(app));
 
   // The admin workspace is mounted at a secret slug. Every starter URL is dead:
   // /admin, /api/admin and /setup always answer 404, and only requests that
@@ -262,6 +278,8 @@ if (require.main === module) {
   }, 6 * 60 * 60 * 1000);
   cleanupTimer.unref();
   const shutdown = () => {
+    const liveReload = app.get('liveReload');
+    if (liveReload) liveReload.close();
     server.close(() => process.exit(0));
     setTimeout(() => process.exit(0), 3000).unref();
   };

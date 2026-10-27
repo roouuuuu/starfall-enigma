@@ -40,6 +40,18 @@ npm run seed
 
 `seed:reset` deletes the selected database and all of its data, then rebuilds the catalogue. It is destructive and must not be run against a live store.
 
+### Local development and asset caching
+
+Static files are served with `Cache-Control: no-cache` plus an `ETag`. Every page load revalidates: an unchanged file answers `304` with no body, a changed one comes back as `200` straight away. Visitors never need a hard refresh to pick up a new stylesheet.
+
+In development (`NODE_ENV` unset) the server also watches `public/` and `views/` and pushes changes over Server-Sent Events at `/__dev/reload`:
+
+- CSS edits swap the stylesheet in place, keeping scroll position and page state.
+- Template and script edits reload the page automatically.
+- `src/` edits restart the process through `npm run dev`; the page reloads once the server is back.
+
+Both the endpoint and the injected `dev-live-reload.js` are disabled when `NODE_ENV=production`. Tests run with live reload off.
+
 ### Private admin URL
 
 The admin workspace is **not** served from `/admin`. On first start the app generates a random slug such as `ops-f091ba41dc60`, stores it in the settings table and prints the real URL in the terminal:

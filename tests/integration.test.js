@@ -3,6 +3,7 @@
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
+const http = require('node:http');
 const {
   ADMIN_BASE,
   Client,
@@ -26,6 +27,24 @@ const CUSTOMER = {
   firstName: 'Mara',
   lastName: 'Voss'
 };
+
+// Node's fetch (undici) injects `cache-control: no-cache` as soon as a request
+// carries conditional headers, which defeats revalidation. Raw HTTP keeps the
+// test honest about the 304 a browser receives on a normal navigation.
+function conditionalGet(baseUrl, pathname, headers) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(pathname, baseUrl);
+    const request = http.request(
+      { hostname: url.hostname, port: url.port, path: `${url.pathname}${url.search}`, method: 'GET', headers },
+      (response) => {
+        response.resume();
+        response.on('end', () => resolve({ status: response.statusCode, headers: response.headers }));
+      }
+    );
+    request.on('error', reject);
+    request.end();
+  });
+}
 
 let temp;
 let ctx;
@@ -821,4 +840,23 @@ test('the admin workspace is unreachable without the private slug', async () => 
 
   const apiOnSlug = await admin.json(`${ADMIN_BASE}/api/admin/dashboard`, { raw: true });
   assert.equal(apiOnSlug.status, 200, 'API works through the slug');
+});
+
+test('static assets always revalidate and the dev reload endpoint stays off', async () => {
+  const css = await guest.request('/css/storefront.css', { raw: true });
+  assert.equal(css.status, 200);
+  assert.equal(css.headers.get('cache-control'), 'no-cache');
+  assert.ok(css.headers.get('etag'), 'an ETag is still issued for 304 responses');
+  assert.ok((await css.text()).includes('.mega-menu'), 'stylesheet body is served');
+
+  const cached = await conditionalGet(guest.baseUrl, '/css/storefront.css', {
+    'if-none-match': css.headers.get('etag')
+  });
+  assert.equal(cached.status, 304, 'unchanged assets revalidate to 304');
+
+  const reload = await guest.request('/__dev/reload', { raw: true });
+  assert.equal(reload.status, 404, 'live reload is disabled when it is not requested');
+
+  const page = await expectPage(guest, '/');
+  assert.doesNotMatch(page.text, /dev-live-reload/, 'the dev script is not injected');
 });

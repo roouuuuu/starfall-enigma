@@ -110,7 +110,7 @@ function csrfFrom(html) {
 
 async function startTestServer(dbPath) {
   const { createApp } = require('../src/server');
-  const app = createApp({ dbPath });
+  const app = createApp({ dbPath, liveReload: false });
   const server = await new Promise((resolve) => {
     const instance = app.listen(0, '127.0.0.1', () => resolve(instance));
   });

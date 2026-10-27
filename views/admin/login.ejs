@@ -38,12 +38,13 @@
         <button class="admin-button admin-button--primary admin-button--full" type="submit" data-admin-auth-submit>Masuk <span aria-hidden="true">↗</span></button>
       </form>
       <div class="admin-auth-foot">
-        <p>Belum ada administrator? <a href="/setup">Jalankan setup pertama</a></p>
+        <p>Belum ada administrator? <a href="<%= adminBase %>/setup">Jalankan setup pertama</a></p>
         <p class="admin-auth-disclaimer">Demo lokal. Tidak ada autentikasi pihak ketiga atau pengiriman email.</p>
       </div>
     </div>
   </section>
 </main>
 <script src="/js/admin-auth.js" defer></script>
+<% if (devReload) { %><script src="/js/dev-live-reload.js" data-dev-reload defer></script><% } %>
 </body>
 </html>
