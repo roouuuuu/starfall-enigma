@@ -64,7 +64,7 @@
     statusList.innerHTML = order.map((status) => {
       const count = Number(counts[status] || 0);
       const width = Math.max(4, Math.round((count / max) * 100));
-      return `<a class="admin-status-row" href="/admin/orders?status=${status}">
+      return `<a class="admin-status-row" href="${admin.url(`/orders?status=${status}`)}">
         <span class="admin-status-dot admin-status-dot--${admin.escapeAttr(status)}"></span>
         <span class="admin-status-name">${admin.escapeHTML(admin.STATUS[status])}</span>
         <span class="admin-status-bar"><i style="width:${width}%"></i></span>
@@ -99,7 +99,7 @@
     }
     recentOrders.innerHTML = orders.map((order) => `
       <tr>
-        <td><a class="admin-order-link" href="/admin/orders?search=${encodeURIComponent(order.number)}">${admin.escapeHTML(order.number)}</a><small class="admin-cell-sub">${admin.escapeHTML(admin.date(order.createdAt))}</small></td>
+        <td><a class="admin-order-link" href="${admin.url(`/orders?search=${encodeURIComponent(order.number)}`)}">${admin.escapeHTML(order.number)}</a><small class="admin-cell-sub">${admin.escapeHTML(admin.date(order.createdAt))}</small></td>
         <td>${admin.escapeHTML(order.customerName || order.email || '—')}<small class="admin-cell-sub">${admin.escapeHTML(order.email || '')}</small></td>
         <td>${admin.escapeHTML(admin.channelLabel(order.channel))}</td>
         <td>${admin.statusBadge(order.status)}</td>
@@ -114,7 +114,7 @@
       return;
     }
     lowStockList.innerHTML = items.map((item) => `
-      <a class="admin-low-row" href="/admin/inventory?search=${encodeURIComponent(item.sku || '')}">
+      <a class="admin-low-row" href="${admin.url(`/inventory?search=${encodeURIComponent(item.sku || '')}`)}">
         <img src="${admin.escapeAttr(item.image)}" alt="" loading="lazy">
         <span class="admin-low-copy">
           <strong>${admin.escapeHTML(item.name)}</strong>

@@ -8,6 +8,7 @@ const { getDb, getSettings } = require('./db');
 const { sessionMiddleware, cleanupSessions } = require('./auth');
 const { contextMiddleware } = require('./context');
 const { csrfProtection } = require('./auth');
+const { resolveAdminSlug } = require('./admin-access');
 const { AppError, parseCookies, appendCookie, cookie, safeRedirect, cleanText, addUtm, isValidHttpUrl, escapeXml } = require('./utils');
 const { normalizeLanguage, normalizeCurrency } = require('./i18n');
 const { renderNotFound } = require('./routes/pages');
@@ -17,6 +18,7 @@ const PORT = Number(process.env.PORT || 3000);
 
 function securityHeaders(req, res, next) {
   const nonce = crypto.randomBytes(16).toString('base64');
+  const adminBase = req.app.get('adminBase') || '';
   res.locals.nonce = nonce;
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
@@ -38,17 +40,24 @@ function securityHeaders(req, res, next) {
       "object-src 'none'"
     ].join('; ')
   );
-  if (req.path.startsWith('/admin') || req.path === '/setup') {
+  const isAdminPath = req.path.startsWith('/admin') || req.path === '/setup' ||
+    (adminBase && (req.path === adminBase || req.path.startsWith(`${adminBase}/`)));
+  if (isAdminPath) {
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   }
   return next();
 }
 
 function createApp(options = {}) {
-  const db = getDb(options.dbPath || process.env.DB_PATH);
+  const dbPath = options.dbPath || process.env.DB_PATH;
+  const db = getDb(dbPath);
   const app = express();
+  const adminSlug = resolveAdminSlug(db, dbPath);
+  const adminBase = `/${adminSlug}`;
   app.set('db', db);
   app.set('settings', getSettings(db));
+  app.set('adminSlug', adminSlug);
+  app.set('adminBase', adminBase);
   app.set('view engine', 'ejs');
   app.set('views', path.join(__dirname, '..', 'views'));
   app.set('trust proxy', false);
@@ -57,10 +66,48 @@ function createApp(options = {}) {
 
   app.use(securityHeaders);
   app.use(express.static(PUBLIC_DIR, { index: false, maxAge: '1h' }));
+
+  // The admin workspace is mounted at a secret slug. Every starter URL is dead:
+  // /admin, /api/admin and /setup always answer 404, and only requests that
+  // arrive through the slug are rewritten onto the internal /admin routes.
+  app.use((req, res, next) => {
+    const url = req.url;
+    const queryIndex = url.indexOf('?');
+    const pathname = queryIndex === -1 ? url : url.slice(0, queryIndex);
+    const search = queryIndex === -1 ? '' : url.slice(queryIndex);
+
+    res.locals.adminBase = adminBase;
+
+    const isLegacyAdminPath = pathname === '/admin'
+      || pathname.startsWith('/admin/')
+      || pathname === '/api/admin'
+      || pathname.startsWith('/api/admin/')
+      || pathname === '/setup';
+    if (isLegacyAdminPath) {
+      req.seAdminHidden = true;
+      return next();
+    }
+
+    if (pathname === adminBase || pathname.startsWith(`${adminBase}/`)) {
+      const rest = pathname.slice(adminBase.length);
+      const isApiPath = rest === '/api' || rest.startsWith('/api/');
+      req.url = (isApiPath || rest === '/setup') ? rest + search : `/admin${rest}${search}`;
+    }
+    return next();
+  });
+
   app.use(express.json({ limit: '512kb' }));
   app.use(express.urlencoded({ extended: false, limit: '64kb' }));
   app.use(sessionMiddleware(db));
   app.use(contextMiddleware(db));
+
+  app.use((req, res, next) => {
+    if (!req.seAdminHidden) return next();
+    if (req.path.startsWith('/api/')) {
+      return next(new AppError(404, 'API endpoint not found.', 'not_found'));
+    }
+    return renderNotFound(req, res);
+  });
 
   app.get('/favicon.ico', (req, res) => {
     res.type('image/svg+xml');
@@ -115,11 +162,11 @@ function createApp(options = {}) {
     res.send([
       'User-agent: *',
       'Disallow: /admin',
+      'Disallow: /setup',
       'Disallow: /api/',
       'Disallow: /account',
       'Disallow: /checkout',
       'Disallow: /order/',
-      'Disallow: /setup',
       'Disallow: /login',
       'Disallow: /register',
       'Allow: /assets/',
@@ -201,12 +248,14 @@ function createApp(options = {}) {
 
 if (require.main === module) {
   const app = createApp();
+  const adminBase = app.get('adminBase');
   const server = app.listen(PORT, () => {
     const db = app.get('db');
     const adminCount = Number(db.prepare("SELECT COUNT(*) AS count FROM users WHERE role = 'admin'").get().count);
     console.log(`\nSTARFALL ENIGMA — http://localhost:${PORT}`);
-    if (adminCount === 0) console.log(`First-run setup: http://localhost:${PORT}/setup\n`);
-    else console.log(`Admin: http://localhost:${PORT}/admin\n`);
+    console.log('Admin URL is private. /admin and /setup always answer 404.');
+    if (adminCount === 0) console.log(`First-run setup: http://localhost:${PORT}${adminBase}/setup\n`);
+    else console.log(`Admin: http://localhost:${PORT}${adminBase}\n`);
   });
   const cleanupTimer = setInterval(() => {
     try { cleanupSessions(app.get('db')); } catch (_) { /* noop */ }

@@ -344,6 +344,8 @@ select option { background: var(--ink-3); color: var(--bone); }
   display: flex;
   align-items: center;
   height: 100%;
+  padding-inline: 7px;
+  margin-inline: -7px;
   font-size: 9px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -354,7 +356,7 @@ select option { background: var(--ink-3); color: var(--bone); }
 .nav-link::after {
   content: '';
   position: absolute;
-  left: 0; right: 0; bottom: 25px;
+  left: 7px; right: 7px; bottom: 25px;
   height: 1px;
   background: var(--bone);
   transform: scaleX(0);
@@ -401,8 +403,8 @@ select option { background: var(--ink-3); color: var(--bone); }
 /* Mega menu */
 .nav-item.has-mega { position: static; }
 .mega-menu {
-  position: fixed;
-  top: calc(31px + 34px + var(--header-h));
+  position: absolute;
+  top: 100%;
   left: 50%;
   z-index: 120;
   width: min(760px, calc(100vw - 48px));
@@ -413,12 +415,22 @@ select option { background: var(--ink-3); color: var(--bone); }
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translate(-50%, -8px);
-  transition: opacity 0.25s var(--ease), transform 0.25s var(--ease), visibility 0.25s;
+  transform: translate(-50%, 0);
+  transition: opacity 0.25s var(--ease), visibility 0.25s;
+}
+/* Bridges the hairline between the header and the panel so the pointer never leaves the hover area. */
+.mega-menu::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: -4px;
+  height: 4px;
 }
 .has-mega:hover .mega-menu,
-.has-mega:focus-within .mega-menu { opacity: 1; visibility: visible; pointer-events: auto; transform: translate(-50%, 0); }
-.mega-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; }
+.has-mega.is-open .mega-menu { opacity: 1; visibility: visible; pointer-events: auto; }
+.has-mega[data-dismissed] .mega-menu { opacity: 0; visibility: hidden; pointer-events: none; }
+.mega-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; transform: translateY(-10px); transition: transform 0.3s var(--ease); }
+.has-mega:hover .mega-grid,
+.has-mega.is-open .mega-grid { transform: translateY(0); }
 .mega-links { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
 .mega-links > .eyebrow { margin-bottom: 14px; color: var(--gold); }
 .mega-links > a {

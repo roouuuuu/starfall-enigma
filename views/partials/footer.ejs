@@ -78,7 +78,7 @@
     <div class="footer-bottom-links">
       <a href="<%= langSwitchUrl %>"><%= t('footer.selectLanguage') %> · <%= lang === 'id' ? 'Bahasa Indonesia' : 'English' %></a>
       <a href="<%= currencySwitchUrl %>"><%= t('footer.selectCurrency') %> · <%= currency %></a>
-      <a href="/admin/login"><%= t('adminLink') %></a>
+      <% if (user && user.role === 'admin') { %><a href="<%= adminBase %>/login"><%= t('adminLink') %></a><% } %>
     </div>
   </div>
 </footer>

@@ -5,6 +5,9 @@
   const form = document.querySelector('[data-admin-auth]');
   if (!form) return;
 
+  const adminBase = (document.querySelector('meta[name="admin-base"]') || {}).content || '';
+  const adminUrl = (path) => `${adminBase}${path}`;
+
   const mode = form.dataset.adminAuth === 'setup' ? 'setup' : 'login';
   const errorEl = form.querySelector('[data-admin-auth-error]');
   const submit = form.querySelector('[data-admin-auth-submit]');
@@ -71,7 +74,7 @@
 
     setBusy(true);
     try {
-      const response = await fetch(mode === 'setup' ? '/api/setup' : '/api/admin/login', {
+      const response = await fetch(adminUrl(mode === 'setup' ? '/api/setup' : '/api/admin/login'), {
         method: 'POST',
         credentials: 'same-origin',
         headers: {
@@ -89,7 +92,7 @@
           : 'Akses tidak dapat diproses. Silakan coba lagi.';
         throw new Error(message);
       }
-      window.location.assign((result && result.redirect) || '/admin');
+      window.location.assign((result && result.redirect) || adminBase || '/');
     } catch (error) {
       showError(error.message || 'Tidak dapat terhubung ke server.');
       setBusy(false);

@@ -5,6 +5,7 @@ node_modules/
 data/*.sqlite
 data/*.sqlite-shm
 data/*.sqlite-wal
+data/admin-slug.txt
 data/backups/
 *.log
 npm-debug.log*

@@ -73,7 +73,8 @@ const ADMIN_PAGES = {
 router.get('/setup', (req, res) => {
   const db = req.app.get('db');
   if (getAdminCount(db) > 0) {
-    return res.redirect(req.user?.role === 'admin' ? '/admin' : '/admin/login');
+    const adminBase = req.app.get('adminBase');
+    return res.redirect(req.user?.role === 'admin' ? adminBase : `${adminBase}/login`);
   }
   res.render('admin/setup', {
     pageTitle: 'Penyiapan Administrator — Starfall Enigma',
@@ -87,8 +88,9 @@ router.get('/setup', (req, res) => {
 
 router.get('/admin/login', (req, res) => {
   const db = req.app.get('db');
-  if (getAdminCount(db) === 0) return res.redirect('/setup');
-  if (req.user?.role === 'admin') return res.redirect('/admin');
+  const adminBase = req.app.get('adminBase');
+  if (getAdminCount(db) === 0) return res.redirect(`${adminBase}/setup`);
+  if (req.user?.role === 'admin') return res.redirect(adminBase);
   res.render('admin/login', {
     pageTitle: 'Masuk Dasbor — Starfall Enigma',
     bodyClass: 'admin-auth-body',

@@ -37,12 +37,8 @@
         </div>
         <details class="auth-forgot">
           <summary><%= t('auth.forgot') %></summary>
-          <p><%= t('auth.forgotNote') %> <a href="mailto:<%= brandEmail %>?subject=<%= encodeURIComponent('Password reset request — Starfall Enigma') %>"><%= brandEmail %></a></p>
+          <p><%= t('auth.forgotNote') %> <a href="mailto:<%= brandEmail %>?subject=<%= encodeURIComponent('Password reset request - Starfall Enigma') %>"><%= brandEmail %></a></p>
         </details>
-        <div class="auth-admin-link">
-          <span><%= lang === 'id' ? 'Staf maison?' : 'Maison staff?' %></span>
-          <a href="/admin/login"><%= t('auth.adminLogin') %> <span aria-hidden="true">↗</span></a>
-        </div>
       </div>
     </div>
   </section>

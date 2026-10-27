@@ -871,6 +871,75 @@
     window.addEventListener('scroll', update, { passive: true });
   }
 
+  function initMegaMenu() {
+    const item = document.querySelector('.nav-item.has-mega');
+    if (!item) return;
+    const trigger = item.querySelector('.nav-link');
+    const panel = item.querySelector('.mega-menu');
+    if (!trigger || !panel) return;
+
+    const CLOSE_DELAY = 200;
+    let closeTimer = null;
+    let pinned = false;
+    let suppressFocusOpen = false;
+
+    const setExpanded = (open) => trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+
+    function open() {
+      if (closeTimer) { window.clearTimeout(closeTimer); closeTimer = null; }
+      delete item.dataset.dismissed;
+      item.classList.add('is-open');
+      setExpanded(true);
+    }
+
+    function close() {
+      if (closeTimer) { window.clearTimeout(closeTimer); closeTimer = null; }
+      pinned = false;
+      item.classList.remove('is-open');
+      setExpanded(false);
+    }
+
+    function scheduleClose() {
+      if (pinned) return;
+      if (closeTimer) window.clearTimeout(closeTimer);
+      closeTimer = window.setTimeout(close, CLOSE_DELAY);
+    }
+
+    item.addEventListener('pointerenter', open);
+    item.addEventListener('pointerleave', scheduleClose);
+    item.addEventListener('focusin', () => {
+      if (!suppressFocusOpen) open();
+    });
+
+    // First activation opens the panel, a second activation follows the /shop link.
+    trigger.addEventListener('click', (event) => {
+      if (pinned) return;
+      event.preventDefault();
+      pinned = true;
+      open();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || !item.classList.contains('is-open')) return;
+      event.preventDefault();
+      suppressFocusOpen = true;
+      item.dataset.dismissed = 'true';
+      close();
+      trigger.focus();
+      window.setTimeout(() => { suppressFocusOpen = false; }, 0);
+    });
+
+    document.addEventListener('pointerdown', (event) => {
+      if (!item.classList.contains('is-open') || item.contains(event.target)) return;
+      close();
+    });
+
+    document.addEventListener('focusin', (event) => {
+      if (!item.classList.contains('is-open') || item.contains(event.target)) return;
+      close();
+    });
+  }
+
   function initCursorNote() {
     const note = document.querySelector('.cursor-note');
     if (!note || !window.matchMedia('(pointer: fine)').matches) return;
@@ -1065,6 +1134,7 @@
     bindEvents();
     initReveal();
     syncHeaderOnScroll();
+    initMegaMenu();
     initCursorNote();
 
     if (document.querySelector('[data-cart-drawer].is-open')) resolveCart();

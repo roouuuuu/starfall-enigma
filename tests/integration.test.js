@@ -4,6 +4,7 @@ const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const {
+  ADMIN_BASE,
   Client,
   createSeededDatabase,
   removeTempDir,
@@ -90,7 +91,7 @@ function orderBody(variantId, overrides = {}) {
 test('first-run setup is one-time, login/logout rotates secure sessions', async () => {
   let response = await guest.request('/admin');
   assert.equal(response.status, 302);
-  assert.equal(response.headers.get('location'), '/setup');
+  assert.equal(response.headers.get('location'), `${ADMIN_BASE}/setup`);
 
   const blocked = await guest.json('/api/admin/dashboard');
   assert.equal(blocked.status, 401);
@@ -120,7 +121,7 @@ test('first-run setup is one-time, login/logout rotates secure sessions', async 
   });
   assert.equal(created.status, 201, created.raw);
   assert.equal(created.data.ok, true);
-  assert.equal(created.data.redirect, '/admin');
+  assert.equal(created.data.redirect, ADMIN_BASE);
 
   const sessionCookie = guest.lastSetCookies.find((line) => line.startsWith('se_session='));
   assert.ok(sessionCookie, 'setup must create a session cookie');
@@ -135,7 +136,7 @@ test('first-run setup is one-time, login/logout rotates secure sessions', async 
 
   const setupAgainPage = await guest.request('/setup');
   assert.equal(setupAgainPage.status, 302);
-  assert.equal(setupAgainPage.headers.get('location'), '/admin');
+  assert.equal(setupAgainPage.headers.get('location'), ADMIN_BASE);
   const setupAgainApi = await guest.json('/api/setup', {
     method: 'POST',
     csrf: adminToken,
@@ -154,7 +155,7 @@ test('first-run setup is one-time, login/logout rotates secure sessions', async 
   assert.equal(logout.status, 200);
   const afterLogout = await admin.request('/admin');
   assert.equal(afterLogout.status, 302);
-  assert.equal(afterLogout.headers.get('location'), '/admin/login');
+  assert.equal(afterLogout.headers.get('location'), `${ADMIN_BASE}/login`);
 
   const loginClient = new Client(ctx.baseUrl);
   const loginPage = await tokenFor(loginClient, '/admin/login?lang=en');
@@ -229,7 +230,7 @@ test('storefront, CSP, bilingual routes, search, and missing pages behave safely
 
   const unauthAdmin = await store.request('/admin');
   assert.equal(unauthAdmin.status, 302);
-  assert.equal(unauthAdmin.headers.get('location'), '/admin/login');
+  assert.equal(unauthAdmin.headers.get('location'), `${ADMIN_BASE}/login`);
   assert.match(unauthAdmin.headers.get('x-robots-tag') || '', /noindex/i);
 
   const unauthApi = await store.json('/api/admin/dashboard');
@@ -338,7 +339,7 @@ test('customers can register, sync wishlists, manage addresses, and see order hi
 
   const customerAdmin = await customer.request('/admin');
   assert.equal(customerAdmin.status, 302);
-  assert.equal(customerAdmin.headers.get('location'), '/admin/login');
+  assert.equal(customerAdmin.headers.get('location'), `${ADMIN_BASE}/login`);
 
   const wishlist = await customer.json('/api/wishlist');
   assert.equal(wishlist.status, 200);
@@ -790,4 +791,34 @@ test('social links are configurable, clicks are real, and exports/backup are saf
     const page = await expectPage(admin, route);
     assert.doesNotMatch(page.text, /password_hash|scrypt\$/);
   }
+});
+
+test('the admin workspace is unreachable without the private slug', async () => {
+  const hiddenPages = ['/admin', '/admin/login', '/admin/orders', '/admin/settings', '/setup'];
+  for (const route of hiddenPages) {
+    const response = await guest.request(route, { raw: true });
+    assert.equal(response.status, 404, `${route} must not be reachable`);
+    const body = await response.text();
+    assert.doesNotMatch(body, /admin-auth|admin-shell/);
+  }
+
+  for (const route of ['/api/admin/login', '/api/admin/dashboard', '/api/admin/backup', '/api/setup']) {
+    const response = await guest.json(route, { raw: true });
+    assert.equal(response.status, 404, `${route} must not be reachable`);
+  }
+
+  // The slug itself still works and every admin link stays inside it.
+  const loginPage = await expectPage(guest, '/admin/login');
+  assert.ok(loginPage.text.includes(`content="${ADMIN_BASE}"`), 'admin base meta is injected');
+
+  const dashboard = await expectPage(admin, '/admin');
+  assert.ok(dashboard.text.includes(`href="${ADMIN_BASE}/orders"`), 'sidebar links use the private slug');
+  assert.ok(dashboard.text.includes(`href="${ADMIN_BASE}/finance"`), 'sidebar links use the private slug');
+  assert.doesNotMatch(dashboard.text, /href="\/admin\//, 'no legacy /admin links are rendered');
+
+  const apiThroughSlug = await admin.json('/api/admin/dashboard', { raw: true, headers: {}, });
+  assert.equal(apiThroughSlug.status, 404, 'bare API path stays closed');
+
+  const apiOnSlug = await admin.json(`${ADMIN_BASE}/api/admin/dashboard`, { raw: true });
+  assert.equal(apiOnSlug.status, 200, 'API works through the slug');
 });

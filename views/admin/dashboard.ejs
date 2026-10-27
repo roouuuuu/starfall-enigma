@@ -42,10 +42,10 @@
       </section>
 
       <section class="admin-mini-grid" aria-label="Indikator tambahan">
-        <a href="/admin/orders" class="admin-mini-stat"><span>Pesanan terbuka</span><strong data-kpi-open>—</strong><small>Diproses & dikirim</small></a>
-        <a href="/admin/inventory?filter=low" class="admin-mini-stat admin-mini-stat--alert"><span>Stok menipis</span><strong data-kpi-low>—</strong><small><span data-kpi-out>—</span> varian habis</small></a>
-        <a href="/admin/customers" class="admin-mini-stat"><span>Pelanggan</span><strong data-kpi-customers>—</strong><small><span data-kpi-subscribers>—</span> surat terdaftar</small></a>
-        <a href="/admin/social" class="admin-mini-stat"><span>Klik sosial / 30h</span><strong data-kpi-social>—</strong><small>Hanya klik nyata</small></a>
+        <a href="<%= adminBase %>/orders" class="admin-mini-stat"><span>Pesanan terbuka</span><strong data-kpi-open>—</strong><small>Diproses & dikirim</small></a>
+        <a href="<%= adminBase %>/inventory?filter=low" class="admin-mini-stat admin-mini-stat--alert"><span>Stok menipis</span><strong data-kpi-low>—</strong><small><span data-kpi-out>—</span> varian habis</small></a>
+        <a href="<%= adminBase %>/customers" class="admin-mini-stat"><span>Pelanggan</span><strong data-kpi-customers>—</strong><small><span data-kpi-subscribers>—</span> surat terdaftar</small></a>
+        <a href="<%= adminBase %>/social" class="admin-mini-stat"><span>Klik sosial / 30h</span><strong data-kpi-social>—</strong><small>Hanya klik nyata</small></a>
         <div class="admin-mini-stat"><span>Unit stok</span><strong data-kpi-stock>—</strong><small><span data-kpi-variants>—</span> varian</small></div>
       </section>
 
@@ -63,7 +63,7 @@
         <section class="admin-card admin-status-card">
           <div class="admin-card-head">
             <div><p class="admin-eyebrow">Pesanan</p><h2>Status</h2></div>
-            <a class="admin-text-link" href="/admin/orders">Semua ↗</a>
+            <a class="admin-text-link" href="<%= adminBase %>/orders">Semua ↗</a>
           </div>
           <div class="admin-status-list" data-status-list><p class="admin-empty-text">Memuat…</p></div>
           <div class="admin-card-foot"><span>Total periode</span><strong data-status-total>—</strong></div>
@@ -74,7 +74,7 @@
         <section class="admin-card admin-orders-card">
           <div class="admin-card-head">
             <div><p class="admin-eyebrow">Terbaru</p><h2>Pesanan terakhir</h2></div>
-            <a class="admin-text-link" href="/admin/orders">Lihat semua ↗</a>
+            <a class="admin-text-link" href="<%= adminBase %>/orders">Lihat semua ↗</a>
           </div>
           <div class="admin-table-wrap">
             <table class="admin-table admin-table--compact">
@@ -86,7 +86,7 @@
 
         <aside class="admin-side-stack">
           <section class="admin-card">
-            <div class="admin-card-head"><div><p class="admin-eyebrow">Perhatian</p><h2>Stok menipis</h2></div><a class="admin-text-link" href="/admin/inventory?filter=low">Kelola ↗</a></div>
+            <div class="admin-card-head"><div><p class="admin-eyebrow">Perhatian</p><h2>Stok menipis</h2></div><a class="admin-text-link" href="<%= adminBase %>/inventory?filter=low">Kelola ↗</a></div>
             <div class="admin-low-stock" data-low-stock-list><p class="admin-empty-text">Memeriksa stok…</p></div>
           </section>
           <section class="admin-card">
@@ -99,10 +99,10 @@
       <section class="admin-quick-actions">
         <p class="admin-eyebrow">Aksi cepat</p>
         <div>
-          <a class="admin-quick-action" href="/admin/orders?manual=1"><span>01</span><strong>Penjualan manual</strong><small>Instagram, TikTok, Shopee, offline</small><em>↗</em></a>
-          <a class="admin-quick-action" href="/admin/inventory"><span>02</span><strong>Terima stok</strong><small>Per varian + biaya pembelian</small><em>↗</em></a>
-          <a class="admin-quick-action" href="/admin/finance?new=expense"><span>03</span><strong>Catat pengeluaran</strong><small>Buku kas IDR</small><em>↗</em></a>
-          <a class="admin-quick-action" href="/admin/social"><span>04</span><strong>Atur tautan sosial</strong><small>Lacak klik keluar</small><em>↗</em></a>
+          <a class="admin-quick-action" href="<%= adminBase %>/orders?manual=1"><span>01</span><strong>Penjualan manual</strong><small>Instagram, TikTok, Shopee, offline</small><em>↗</em></a>
+          <a class="admin-quick-action" href="<%= adminBase %>/inventory"><span>02</span><strong>Terima stok</strong><small>Per varian + biaya pembelian</small><em>↗</em></a>
+          <a class="admin-quick-action" href="<%= adminBase %>/finance?new=expense"><span>03</span><strong>Catat pengeluaran</strong><small>Buku kas IDR</small><em>↗</em></a>
+          <a class="admin-quick-action" href="<%= adminBase %>/social"><span>04</span><strong>Atur tautan sosial</strong><small>Lacak klik keluar</small><em>↗</em></a>
         </div>
       </section>
     </main>

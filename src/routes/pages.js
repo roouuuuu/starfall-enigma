@@ -361,7 +361,7 @@ router.get('/credits', (req, res) => {
 });
 
 router.get('/login', (req, res) => {
-  if (req.user) return res.redirect(req.user.role === 'admin' ? '/admin' : '/account');
+  if (req.user) return res.redirect(req.user.role === 'admin' ? res.locals.adminBase : '/account');
   const next = safeRedirect(req.query.next, '/account');
   res.render('login', {
     pageTitle: `${res.locals.t('auth.login')} — Starfall Enigma`,
@@ -375,7 +375,7 @@ router.get('/login', (req, res) => {
 });
 
 router.get('/register', (req, res) => {
-  if (req.user) return res.redirect(req.user.role === 'admin' ? '/admin' : '/account');
+  if (req.user) return res.redirect(req.user.role === 'admin' ? res.locals.adminBase : '/account');
   res.render('register', {
     pageTitle: `${res.locals.t('auth.register')} — Starfall Enigma`,
     metaDescription: res.locals.t('auth.registerIntro'),

@@ -21,7 +21,7 @@ No environment file is loaded automatically. Set environment variables in the sh
 | `PORT` | `3000` | HTTP port |
 | `DB_PATH` | `data/starfall.sqlite` | SQLite path, resolved from the project root |
 | `COOKIE_SECURE` | unset | Set to `1` when serving over HTTPS so the session cookie is `Secure` |
-
+| `ADMIN_SLUG` | generated | Optional fixed private slug for the admin workspace (lowercase letters, digits, hyphens) |
 ## Quick start
 
 ```bash
@@ -40,16 +40,33 @@ npm run seed
 
 `seed:reset` deletes the selected database and all of its data, then rebuilds the catalogue. It is destructive and must not be run against a live store.
 
+### Private admin URL
+
+The admin workspace is **not** served from `/admin`. On first start the app generates a random slug such as `ops-f091ba41dc60`, stores it in the settings table and prints the real URL in the terminal:
+
+```text
+Admin URL is private. /admin and /setup always answer 404.
+Admin: http://localhost:3000/ops-f091ba41dc60
+```
+
+- `/admin`, `/admin/login`, `/setup`, `/api/admin/*` and `/api/setup` always answer `404`.
+- Only the slug opens the workspace; every internal admin link and API call stays inside it.
+- The admin link is hidden from the storefront footer until an administrator is signed in.
+- The slug is written to `data/admin-slug.txt` next to the database, so it survives restarts **and** `npm run seed:reset`. Delete that file to rotate it.
+- Set `ADMIN_SLUG` to pin the slug from the environment instead. Public route names are rejected.
+- `data/admin-slug.txt` is git-ignored, so a public repository never exposes the live slug.
+
 ### First admin setup
 
 The seed deliberately creates **no administrator account**. On first run:
 
-1. Open `http://localhost:3000/setup`.
-2. Create the first owner account (minimum 10-character password).
-3. The setup route locks permanently once an owner exists. Later visits redirect to `/admin/login`.
-4. Admin routes are always served in Indonesian and finance is always recorded in IDR.
+1. Start the server and copy the private admin URL printed in the terminal.
+2. Open `<private-url>/setup`.
+3. Create the first owner account (minimum 10-character password).
+4. The setup route locks permanently once an owner exists. Later visits redirect to the login page inside the same slug.
+5. Admin routes are always served in Indonesian and finance is always recorded in IDR.
 
-There is no password-reset or email-verification flow in this demo. In development, `npm run seed:reset` wipes the entire database, including the owner and all orders, and allows `/setup` again.
+There is no password-reset or email-verification flow in this demo. In development, `npm run seed:reset` wipes the entire database, including the owner and all orders, and allows setup again. The admin slug is stored outside the database, so the admin URL does not change.
 
 ## Storefront
 
@@ -67,7 +84,7 @@ The base product price is stored in USD cents. Orders store both the USD and IDR
 
 ## Admin
 
-Admin pages live under `/admin` and use Indonesian labels throughout.
+Admin pages live under the private slug reported at startup (for example `/ops-f091ba41dc60`) and use Indonesian labels throughout. `/admin` is never routed.
 
 | Area | Main functions |
 | --- | --- |
@@ -145,7 +162,7 @@ DB_PATH=data/demo.sqlite PORT=3100 node scripts/seed.js --reset
 DB_PATH=data/demo.sqlite PORT=3100 node src/server.js
 ```
 
-Open `http://localhost:3100/setup` to create an owner in that disposable database. Do not point a demo database at real customer data.
+Open the private admin URL that the server prints, then `<private-url>/setup` to create an owner in that disposable database. Do not point a demo database at real customer data.
 
 ## Project structure
 
@@ -182,6 +199,7 @@ Open `http://localhost:3100/setup` to create an owner in that disposable databas
 - Session tokens are random, stored as SHA-256 hashes in SQLite, and sent in an `HttpOnly`, `SameSite=Lax` cookie. Use `COOKIE_SECURE=1` behind HTTPS.
 - Authentication and setup endpoints are rate-limited. The limiter is in-memory in this demo and resets when the process restarts.
 - All state-changing requests require a per-session CSRF token; tokens are compared in constant time.
+- Admin pages live behind a randomly generated private slug stored in the database; `/admin`, `/setup` and the bare `/api/admin/*` paths answer `404` for everyone.
 - EJS escapes dynamic output by default. Admin inputs are validated and cleaned on the server.
 - CSP uses a per-request nonce and prohibits third-party scripts, fonts and images.
 - Security headers include `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, a strict referrer policy, a restrictive permissions policy and `Cross-Origin-Opener-Policy: same-origin`.

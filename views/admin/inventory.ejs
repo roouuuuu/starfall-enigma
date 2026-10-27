@@ -24,7 +24,7 @@
             <option value="out">Habis</option>
           </select>
           <button class="admin-button admin-button--small" type="submit">Filter</button>
-          <a class="admin-text-link" href="/admin/inventory">Reset</a>
+          <a class="admin-text-link" href="<%= adminBase %>/inventory">Reset</a>
         </form>
         <div class="admin-table-wrap">
           <table class="admin-table">
@@ -38,7 +38,7 @@
       <section class="admin-card admin-movements-card">
         <div class="admin-card-head admin-card-head--table">
           <div><p class="admin-eyebrow">Jejak audit</p><h2>Pergerakan stok</h2><p>Setiap perubahan varian dicatat permanen dengan stok akhir dan admin pelaksana.</p></div>
-          <a class="admin-text-link" href="/admin/finance">Buku kas ↗</a>
+          <a class="admin-text-link" href="<%= adminBase %>/finance">Buku kas ↗</a>
         </div>
         <form class="admin-inline-filter" data-movements-filter>
           <label class="admin-search"><input type="search" name="search" placeholder="Cari produk, referensi, supplier…"></label>
@@ -51,7 +51,7 @@
             <option value="adjustment">Penyesuaian</option>
           </select>
           <button class="admin-button admin-button--small" type="submit">Filter</button>
-          <a class="admin-text-link" href="/admin/inventory">Reset</a>
+          <a class="admin-text-link" href="<%= adminBase %>/inventory">Reset</a>
         </form>
         <div class="admin-table-wrap">
           <table class="admin-table admin-table--compact">

@@ -31,6 +31,16 @@
   let catalogCache = null;
   let catalogPromise = null;
 
+  // The admin workspace lives behind a private slug, so every internal URL is
+  // built from the base the server injected into <meta name="admin-base">.
+  const adminBase = (document.querySelector('meta[name="admin-base"]') || {}).content || '';
+
+  function adminUrl(target) {
+    const path = String(target || '');
+    if (!path.startsWith('/') || path.startsWith('//')) return path;
+    return `${adminBase}${path}`;
+  }
+
   const idr = new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
@@ -138,6 +148,7 @@
   }
 
   async function api(url, options = {}) {
+    const target = adminUrl(url);
     const init = { credentials: 'same-origin', ...options };
     init.headers = new Headers(options.headers || {});
     init.headers.set('Accept', 'application/json');
@@ -151,7 +162,7 @@
     }
     let response;
     try {
-      response = await fetch(url, init);
+      response = await fetch(target, init);
     } catch (_) {
       const error = new Error('Koneksi ke server terputus. Periksa jaringan lalu coba lagi.');
       error.code = 'network';
@@ -423,7 +434,7 @@
   async function logout() {
     try {
       await api('/api/auth/logout', { method: 'POST', body: {} });
-      window.location.assign('/admin/login');
+      window.location.assign(adminUrl('/login'));
     } catch (error) {
       toast(error.message || 'Gagal keluar.', 'error');
     }
@@ -526,6 +537,8 @@
   }
 
   admin.api = api;
+  admin.url = adminUrl;
+  admin.base = adminBase;
   admin.toast = toast;
   admin.escapeHTML = escapeHTML;
   admin.escapeAttr = escapeAttr;

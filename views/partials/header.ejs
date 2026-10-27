@@ -27,7 +27,7 @@
     <span>Collection 01 / <%= lang === 'id' ? 'Yang Tak Terucap' : 'The Unspoken' %></span>
   </div>
   <div class="utility-right">
-    <% if (user && user.role === 'admin') { %><a href="/admin" class="utility-admin"><%= lang === 'id' ? 'Dashboard' : 'Dashboard' %> ↗</a><% } %>
+    <% if (user && user.role === 'admin') { %><a href="<%= adminBase %>" class="utility-admin"><%= lang === 'id' ? 'Dashboard' : 'Dashboard' %> ↗</a><% } %>
     <a href="/stores"><%= t('nav.stores') %></a>
     <a href="/client-care"><%= t('nav.clientCare') %></a>
     <a href="<%= langSwitchUrl %>" hreflang="<%= lang === 'en' ? 'id' : 'en' %>" aria-label="<%= t('footer.selectLanguage') %>"><%= langAlt %></a>
@@ -47,9 +47,9 @@
     <nav class="primary-nav" aria-label="<%= t('common.menu') %>">
       <% navItems.forEach((item) => { %>
         <div class="nav-item <%= item.mega ? 'has-mega' : '' %>">
-          <a class="nav-link <%= activeNav === item.id ? 'is-active' : '' %>" href="<%= item.href %>" <%= item.mega ? 'aria-haspopup="true"' : '' %>><%= item.label %></a>
+          <a class="nav-link <%= activeNav === item.id ? 'is-active' : '' %>" href="<%= item.href %>"<% if (item.mega) { %> aria-haspopup="true" aria-expanded="false" aria-controls="mega-clothing"<% } %>><%= item.label %></a>
           <% if (item.mega) { %>
-          <div class="mega-menu" role="group" aria-label="<%= t('nav.clothing') %>">
+          <div class="mega-menu" id="mega-clothing" role="group" aria-label="<%= t('nav.clothing') %>">
             <div class="mega-grid">
               <div class="mega-links">
                 <p class="eyebrow"><%= t('nav.clothing') %></p>
@@ -74,7 +74,7 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M15.5 15.5 21 21" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
       </button>
       <% if (user) { %>
-        <a class="icon-button account-button" href="<%= user.role === 'admin' ? '/admin' : '/account' %>" aria-label="<%= t('common.account') %>">
+        <a class="icon-button account-button" href="<%= user.role === 'admin' ? adminBase : '/account' %>" aria-label="<%= t('common.account') %>">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 21c.5-4.2 3.3-6.5 7.5-6.5s7 2.3 7.5 6.5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
         </a>
       <% } else { %>
@@ -116,7 +116,7 @@
       <a href="<%= langSwitchUrl %>"><%= t('footer.selectLanguage') %> · <%= langAlt %></a>
       <a href="<%= currencySwitchUrl %>"><%= t('footer.selectCurrency') %> · <%= currencyAlt %></a>
       <% if (user) { %>
-        <a href="<%= user.role === 'admin' ? '/admin' : '/account' %>"><%= t('common.account') %></a>
+        <a href="<%= user.role === 'admin' ? adminBase : '/account' %>"><%= t('common.account') %></a>
       <% } else { %>
         <a href="/login?next=<%= encodeURIComponent(currentUrl) %>"><%= t('auth.login') %></a>
       <% } %>

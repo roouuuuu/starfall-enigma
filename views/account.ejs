@@ -20,7 +20,7 @@
       <button class="account-nav-item" type="button" data-account-tab="orders"><span>02</span><%= t('account.orders') %> <small><%= orders.length %></small></button>
       <button class="account-nav-item" type="button" data-account-tab="addresses"><span>03</span><%= t('account.addresses') %> <small><%= addresses.length %></small></button>
       <a class="account-nav-item" href="/wishlist"><span>04</span><%= t('common.wishlist') %> <small><%= wishlistCount %></small></a>
-      <% if (accountUser.role === 'admin') { %><a class="account-nav-item account-nav-admin" href="/admin"><span>05</span>Dashboard <small>↗</small></a><% } %>
+      <% if (accountUser.role === 'admin') { %><a class="account-nav-item account-nav-admin" href="<%= adminBase %>"><span>05</span>Dashboard <small>↗</small></a><% } %>
       <button class="account-nav-item account-nav-logout" type="button" data-logout><span>—</span><%= t('auth.logout') %></button>
     </aside>
 

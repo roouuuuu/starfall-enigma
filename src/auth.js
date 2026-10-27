@@ -140,8 +140,9 @@ function requireAuth(req, res, next) {
 function requireAdmin(req, res, next) {
   if (req.user?.role === 'admin') return next();
   if (wantsJson(req)) return next(new AppError(req.user ? 403 : 401, 'Administrator access required.', 'admin_required'));
-  if (getAdminCount(req.app.get('db')) === 0) return res.redirect('/setup');
-  return res.redirect('/admin/login');
+  const adminBase = req.app.get('adminBase') || '/admin';
+  if (getAdminCount(req.app.get('db')) === 0) return res.redirect(`${adminBase}/setup`);
+  return res.redirect(`${adminBase}/login`);
 }
 
 function csrfProtection() {

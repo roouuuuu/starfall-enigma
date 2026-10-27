@@ -7,6 +7,27 @@ const { execFileSync } = require('node:child_process');
 
 const ROOT = path.join(__dirname, '..');
 
+// The admin workspace is served from a private slug. Tests pin it so assertions
+// stay deterministic; Client rewrites legacy /admin URLs onto the slug.
+const ADMIN_SLUG = process.env.ADMIN_SLUG || 'ops-test-9f3a2c';
+process.env.ADMIN_SLUG = ADMIN_SLUG;
+const ADMIN_BASE = `/${ADMIN_SLUG}`;
+
+const LEGACY_ADMIN_PATTERNS = [
+  [/^\/admin(?=\/|$|\?)/, `${ADMIN_BASE}`],
+  [/^\/api\/admin(?=\/|$|\?)/, `${ADMIN_BASE}/api/admin`],
+  [/^\/setup(?=\?|$)/, `${ADMIN_BASE}/setup`],
+  [/^\/api\/setup(?=\?|$)/, `${ADMIN_BASE}/api/setup`]
+];
+
+function toAdminUrl(urlPath) {
+  if (typeof urlPath !== 'string') return urlPath;
+  for (const [pattern, replacement] of LEGACY_ADMIN_PATTERNS) {
+    if (pattern.test(urlPath)) return urlPath.replace(pattern, replacement);
+  }
+  return urlPath;
+}
+
 function createSeededDatabase() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'starfall-enigma-test-'));
   const dbPath = path.join(dir, 'starfall.sqlite');
@@ -43,6 +64,7 @@ class Client {
   }
 
   async request(urlPath, options = {}) {
+    const target = options.raw ? urlPath : toAdminUrl(urlPath);
     const headers = new Headers(options.headers || {});
     const cookie = this.cookieHeader();
     if (cookie) headers.set('cookie', cookie);
@@ -53,7 +75,7 @@ class Client {
     }
     if (!headers.has('accept')) headers.set('accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8');
     if (options.csrf) headers.set('x-csrf-token', options.csrf);
-    const response = await fetch(this.baseUrl + urlPath, {
+    const response = await fetch(this.baseUrl + target, {
       method: options.method || 'GET',
       headers,
       body,
@@ -110,6 +132,8 @@ async function stopTestServer(server, db) {
 
 module.exports = {
   ROOT,
+  ADMIN_BASE,
+  ADMIN_SLUG,
   Client,
   createSeededDatabase,
   removeTempDir,

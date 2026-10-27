@@ -88,7 +88,7 @@
             <td><span class="admin-type-badge admin-type-badge--${admin.escapeAttr(entry.type)}">${income ? 'Masuk' : 'Keluar'}</span></td>
             <td><strong>${admin.escapeHTML(entry.description)}</strong>${entry.note ? `<small class="admin-cell-sub">${admin.escapeHTML(entry.note)}</small>` : ''}</td>
             <td>${admin.escapeHTML(entry.source || '—')}<small class="admin-cell-sub">${admin.escapeHTML(entry.paymentMethod || '')}</small></td>
-            <td>${entry.orderNumber ? `<a class="admin-order-link" href="/admin/orders?search=${encodeURIComponent(entry.orderNumber)}">${admin.escapeHTML(entry.orderNumber)}</a>` : '<span class="admin-cell-muted">Manual</span>'}</td>
+            <td>${entry.orderNumber ? `<a class="admin-order-link" href="${admin.url(`/orders?search=${encodeURIComponent(entry.orderNumber)}`)}">${admin.escapeHTML(entry.orderNumber)}</a>` : '<span class="admin-cell-muted">Manual</span>'}</td>
             <td class="is-right"><strong class="admin-money ${income ? 'is-positive' : 'is-negative'}">${income ? '+' : '−'} ${admin.money(entry.amountIdr)}</strong></td>
             <td class="is-right">${entry.isManual ? `<span class="admin-row-actions"><button class="admin-icon-button" type="button" data-finance-edit="${entry.id}" aria-label="Ubah transaksi">✎</button><button class="admin-icon-button admin-icon-button--danger" type="button" data-finance-delete="${entry.id}" aria-label="Hapus transaksi">×</button></span>` : '<span class="admin-lock-mark" title="Entri otomatis terkunci">⌁</span>'}</td>
           </tr>`;
@@ -173,7 +173,7 @@
           if (value) params.set(key, value);
         }
       }
-      window.location.assign(`/api/admin/finance/export${params.toString() ? `?${params}` : ''}`);
+      window.location.assign(admin.url(`/api/admin/finance/export${params.toString() ? `?${params}` : ''}`));
     });
   }
 

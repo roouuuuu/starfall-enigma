@@ -90,9 +90,10 @@ function makeLoginHandler(forceAdmin) {
            VALUES (?, 'auth.login', 'user', ?, ?, ?)`
         ).run(Number(user.id), String(user.id), JSON.stringify({ area: forceAdmin ? 'admin' : 'storefront' }), new Date().toISOString());
         const requestedNext = safeRedirect(req.body?.next, '');
+        const adminBase = req.app.get('adminBase');
         const redirect = forceAdmin
-          ? '/admin'
-          : (user.role === 'admin' && !requestedNext ? '/admin' : requestedNext || '/account');
+          ? adminBase
+          : (user.role === 'admin' && !requestedNext ? adminBase : requestedNext || '/account');
         return res.json({
           ok: true,
           user: publicUser(user),
@@ -193,7 +194,7 @@ router.post('/setup', setupRateLimiter(), (req, res, next) => {
       throw error;
     }
     rotateSessionForUser(db, req, res, userId);
-    return res.status(201).json({ ok: true, redirect: '/admin' });
+    return res.status(201).json({ ok: true, redirect: req.app.get('adminBase') });
   } catch (error) {
     return next(error);
   }

@@ -43,10 +43,10 @@
             <td><div class="admin-customer-cell"><span class="admin-avatar admin-avatar--small">${admin.escapeHTML(admin.initials(customer.firstName, customer.lastName))}</span><strong>${admin.escapeHTML(name)}</strong></div></td>
             <td><a class="admin-email-link" href="mailto:${admin.escapeAttr(customer.email || '')}">${admin.escapeHTML(customer.email || '—')}</a><small class="admin-cell-sub">${admin.escapeHTML(customer.phone || 'Tanpa telepon')}</small></td>
             <td>${admin.escapeHTML(admin.date(customer.createdAt))}</td>
-            <td>${customer.orderCount ? `<a class="admin-order-link" href="/admin/orders?search=${orderSearch}">${admin.number(customer.orderCount)} pesanan</a>` : '<span class="admin-cell-muted">Belum ada</span>'}</td>
+            <td>${customer.orderCount ? `<a class="admin-order-link" href="${admin.url(`/orders?search=${orderSearch}`)}">${admin.number(customer.orderCount)} pesanan</a>` : '<span class="admin-cell-muted">Belum ada</span>'}</td>
             <td class="is-right"><strong>${admin.money(customer.spend)}</strong></td>
             <td>${customer.lastOrder ? admin.escapeHTML(admin.dateTime(customer.lastOrder)) : '<span class="admin-cell-muted">—</span>'}</td>
-            <td class="is-right"><a class="admin-icon-button" href="/admin/orders?search=${orderSearch}" aria-label="Lihat pesanan ${admin.escapeAttr(name)}">↗</a></td>
+            <td class="is-right"><a class="admin-icon-button" href="${admin.url(`/orders?search=${orderSearch}`)}" aria-label="Lihat pesanan ${admin.escapeAttr(name)}">↗</a></td>
           </tr>`;
       }).join('');
     }
