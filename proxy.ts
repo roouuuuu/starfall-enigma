@@ -1,9 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
+// React only needs eval() in development for callstack reconstruction and
+// Fast Refresh. Production keeps the strict policy.
+const SCRIPT_SRC = process.env.NODE_ENV === 'production'
+  ? "script-src 'self'"
+  : "script-src 'self' 'unsafe-eval'";
+
 function buildCsp(nonce: string) {
   return [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}'`,
+    `${SCRIPT_SRC} 'nonce-${nonce}'`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data:",
     "font-src 'self'",
