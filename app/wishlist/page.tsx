@@ -15,7 +15,7 @@ export async function generateMetadata() {
 export default async function WishlistPage() {
   const site = await getSiteContext();
   const { t, lang, money, wishlistIds } = site;
-  const items = wishlistItemsFor(site.user?.id, lang);
+  const items = await wishlistItemsFor(site.user?.id, lang);
 
   const cardLabels = {
     lang,

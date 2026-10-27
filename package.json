@@ -7,6 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "dev:next": "next dev",
+    "start:next": "next start",
     "build": "next build",
     "seed": "node scripts/seed.js",
     "seed:reset": "node scripts/seed.js --reset",

@@ -3,21 +3,23 @@ import 'server-only';
 import { cache } from 'react';
 import { cookies, headers } from 'next/headers';
 
-import { getDb, getSettings } from '@/src/db';
-import { resolveAdminSlug } from '@/src/admin-access';
+import { all, get, getSettings, run } from '@/lib/db';
 import { normalizeLanguage, normalizeCurrency, translator, clientStrings } from '@/src/i18n';
 import { formatMoney, formatDate, hashToken, publicUser } from '@/src/utils';
-import { getSessionUser } from '@/src/auth';
 import { CATEGORY_LIST, COLLECTIONS } from '@/src/catalog';
 import { createAssetHelper } from '@/src/assets';
 
 const asset = createAssetHelper();
 
-let cachedAdminBase: string | null = null;
+async function adminBaseFor() {
+  const explicit = String(process.env.ADMIN_BASE_URL || '').trim();
+  if (explicit) return explicit.replace(/\/+$/, '') || '/';
 
-function adminBaseFor(db: ReturnType<typeof getDb>) {
-  if (!cachedAdminBase) cachedAdminBase = `/${resolveAdminSlug(db, process.env.DB_PATH)}`;
-  return cachedAdminBase;
+  const fromEnv = String(process.env.ADMIN_SLUG || '').trim().toLowerCase();
+  if (fromEnv) return `/${fromEnv}`;
+
+  const row = await get<{ value: string }>("SELECT value FROM settings WHERE key = 'admin_slug'");
+  return row?.value ? `/${row.value}` : '/account';
 }
 
 export type SiteUser = {
@@ -82,31 +84,38 @@ export const getSiteContext = cache(async (): Promise<SiteContext> => {
   const currentUrl = headerStore.get('x-se-url') || pathname;
   const host = headerStore.get('host') || 'localhost:3000';
   const protocol = headerStore.get('x-forwarded-proto') || 'http';
-  const baseUrl = `${protocol}://${host}`;
+  const configuredBase = String(process.env.SITE_URL || '').trim().replace(/\/+$/, '');
+  const baseUrl = configuredBase || `${protocol}://${host}`;
 
-  const db = getDb();
-  const settings = getSettings(db) as Record<string, string>;
+  const settings = await getSettings();
 
   const lang = normalizeLanguage(cookieStore.get('se_lang')?.value || 'en') as 'en' | 'id';
   const currency = normalizeCurrency(cookieStore.get('se_currency')?.value || 'USD');
   const exchangeRate = Number(settings.exchange_rate || 0) || 16000;
 
   const raw = cookieStore.get('se_session')?.value || '';
-  const session = raw
-    ? (db.prepare('SELECT * FROM sessions WHERE token_hash = ?').get(hashToken(raw)) as Record<string, any> | undefined)
+  let session = raw
+    ? await get<Record<string, any>>('SELECT * FROM sessions WHERE token_hash = ?', [hashToken(raw)])
     : undefined;
-  const sessionValid = Boolean(session && new Date(String(session.expires_at)).getTime() > Date.now());
-  const userRow = session && sessionValid ? getSessionUser(db, session) : null;
+
+  if (session && new Date(String(session.expires_at)).getTime() <= Date.now()) {
+    await run('DELETE FROM sessions WHERE token_hash = ?', [session.token_hash]);
+    session = undefined;
+  }
+
+  const userRow = session?.user_id
+    ? await get<Record<string, any>>('SELECT * FROM users WHERE id = ?', [Number(session.user_id)])
+    : null;
   const user = publicUser(userRow) as SiteUser | null;
-  const csrfToken = sessionValid ? String(session?.csrf_token || '') : '';
+  const csrfToken = session ? String(session.csrf_token || '') : '';
 
   const wishlistIds = user
-    ? (db.prepare('SELECT product_id FROM wishlists WHERE user_id = ?').all(Number(user.id)) as Array<{ product_id: number }>)
+    ? (await all<{ product_id: number }>('SELECT product_id FROM wishlists WHERE user_id = ?', [Number(user.id)]))
       .map((row) => Number(row.product_id))
     : [];
 
   const t = translator(lang);
-  const adminBase = adminBaseFor(db);
+  const adminBase = await adminBaseFor();
 
   const clothingCategories = CATEGORY_LIST
     .filter((category: any) => category.group === 'clothing')
@@ -126,7 +135,9 @@ export const getSiteContext = cache(async (): Promise<SiteContext> => {
     label: lang === 'id' ? collection.label_id || collection.label : collection.label,
   }));
 
-  const socials = (db.prepare('SELECT platform, label, url FROM social_links WHERE active = 1 ORDER BY platform ASC').all() as Array<Record<string, string>>)
+  const socials = (await all<Record<string, string>>(
+    'SELECT platform, label, url FROM social_links WHERE active = 1 ORDER BY platform ASC'
+  ))
     .filter((row) => /^https?:\/\//i.test(row.url))
     .map((row) => ({
       platform: row.platform,

@@ -3,8 +3,7 @@ import { Fragment } from 'react';
 import ProductCard from '@/components/product-card';
 import { pageMetadata } from '@/lib/metadata';
 import { getSiteContext } from '@/lib/site';
-import { getDb } from '@/src/db';
-import { getFeatured } from '@/src/catalog-service';
+import { getFeatured } from '@/lib/catalog-service';
 import { CATEGORY_LIST } from '@/src/catalog';
 import { JOURNAL } from '@/src/content';
 
@@ -22,10 +21,9 @@ export async function generateMetadata() {
 export default async function HomePage() {
   const site = await getSiteContext();
   const { t, lang, money } = site;
-  const db = getDb();
 
-  const featured = getFeatured(db, lang, 4, 'featured') as any[];
-  const newArrivals = getFeatured(db, lang, 4, 'new') as any[];
+  const featured = await getFeatured(lang, 4, 'featured');
+  const newArrivals = await getFeatured(lang, 4, 'new');
 
   const journal = JOURNAL.map((item: any) => ({
     slug: item.slug,

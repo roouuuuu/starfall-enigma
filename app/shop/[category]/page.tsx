@@ -4,7 +4,7 @@ import ShopView from '@/components/shop-view';
 import { pageMetadata } from '@/lib/metadata';
 import { getSiteContext } from '@/lib/site';
 import { buildShopData, type SearchParams } from '@/lib/shop';
-import { categoryById } from '@/src/catalog-service';
+import { categoryById } from '@/lib/catalog-service';
 
 type Props = {
   params: Promise<{ category: string }>;
@@ -15,7 +15,7 @@ export async function generateMetadata({ params, searchParams }: Props) {
   const { category } = await params;
   const site = await getSiteContext();
   if (!categoryById[category]) return pageMetadata({ title: 'Starfall Enigma', noindex: true });
-  const data = buildShopData(site.lang, site.currency, site.exchangeRate, await searchParams, category);
+  const data = await buildShopData(site.lang, site.currency, site.exchangeRate, await searchParams, category);
   return pageMetadata({
     title: `${data.meta.title} — Starfall Enigma`,
     description: data.meta.intro,
@@ -28,6 +28,6 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   if (!categoryById[category]) notFound();
 
   const site = await getSiteContext();
-  const data = buildShopData(site.lang, site.currency, site.exchangeRate, await searchParams, category);
+  const data = await buildShopData(site.lang, site.currency, site.exchangeRate, await searchParams, category);
   return <ShopView site={site} {...data} />;
 }

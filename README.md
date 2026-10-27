@@ -1,6 +1,6 @@
 # Starfall Enigma
 
-**Starfall Enigma** is an original gothic-luxury apparel e-commerce demo: a Next.js (React) storefront and an Express admin workspace on one Node.js process, backed by SQLite. It includes a bilingual (English / Bahasa Indonesia) storefront, a secure Indonesian admin workspace, inventory movements, manual sales channels and a cash-basis finance ledger in IDR.
+**Starfall Enigma** is an original gothic-luxury apparel e-commerce demo: a Next.js (React) storefront and an Express admin workspace on one Node.js process, backed by SQLite locally and libSQL/Turso for remote deployments. It includes a bilingual (English / Bahasa Indonesia) storefront, a secure Indonesian admin workspace, inventory movements, manual sales channels and a cash-basis finance ledger in IDR.
 
 > **Demo notice:** checkout is intentionally a demo. No real payment is processed, no card data is collected, no email is sent, and no shipment is created. The social links are outbound links only; there is no marketplace synchronisation or artificial traffic generation.
 
@@ -20,10 +20,13 @@ No environment file is loaded automatically by the Express side. The Next.js sid
 | --- | --- | --- |
 | `PORT` | `3000` | HTTP port |
 | `DB_PATH` | `data/starfall.sqlite` | SQLite path, resolved from the project root. It overrides `TURSO_DATABASE_URL`, which keeps tests and isolated demos on their own file |
-| `TURSO_DATABASE_URL` | `file:data/starfall.sqlite` | libSQL URL used by the Next.js API routes (`file:...` locally, `libsql://...` for Turso) |
+| `TURSO_DATABASE_URL` | `file:data/starfall.sqlite` | libSQL URL used by the Next.js storefront pages and API routes (`file:...` locally, `libsql://...` for Turso) |
 | `TURSO_AUTH_TOKEN` | unset | Turso auth token when `TURSO_DATABASE_URL` points at a remote database |
 | `COOKIE_SECURE` | unset | Set to `1` when serving over HTTPS so the session cookie is `Secure` |
 | `ADMIN_SLUG` | generated | Optional fixed private slug for the admin workspace (lowercase letters, digits, hyphens) |
+| `ADMIN_BASE_URL` | unset | Full public admin URL, e.g. `https://admin.example.com/ops-...`. Used by the storefront on Vercel and by the admin login redirect |
+| `SITE_URL` | request origin | Optional canonical storefront origin, e.g. `https://www.starfallenigma.com` |
+
 ## Quick start
 
 ```bash
@@ -47,7 +50,7 @@ npm run seed
 
 ### Turso / remote database
 
-The storefront API routes use libSQL, so they can share a remote Turso database with the admin workspace. Create the database in the Turso dashboard, then set `TURSO_DATABASE_URL` (`libsql://...`) and `TURSO_AUTH_TOKEN` in `.env.local` or in the Vercel/VPS environment.
+The storefront pages and API routes use libSQL, so they can share a remote Turso database with the admin workspace once the admin migration is complete. Create the database in the Turso dashboard, then set `TURSO_DATABASE_URL` (`libsql://...`) and `TURSO_AUTH_TOKEN` in `.env.local` or in the Vercel/VPS environment.
 
 Seed a fresh Turso database with the same deterministic catalogue as the local seed:
 
@@ -58,6 +61,36 @@ npm run seed:turso
 The script reads `.env.local` unless the variables are already set in the shell. It creates the schema, default settings and social links, then inserts 72 products, 360 variants and the opening inventory. It is idempotent: an already-seeded database is left alone. `--reset` rebuilds the catalogue only when no orders exist.
 
 `DB_PATH` always wins over `TURSO_DATABASE_URL`, which keeps tests and isolated demos on their own SQLite file. On Vercel, never set `DB_PATH`.
+
+### Vercel storefront + VPS admin (Jalur A)
+
+The storefront is ready to run on Next.js alone: pages, storefront APIs, guest sessions, `/preferences`, `/go/:platform`, `/health`, `/robots.txt` and `/sitemap.xml` no longer need `server.js`. The Express admin still uses the local `node:sqlite` driver, so **do not point the admin at Turso yet**; finish the admin migration before the DNS cutover.
+
+Local Next-only smoke test (storefront only, no admin):
+
+```bash
+npm run build
+npm run start:next -- -p 3100
+```
+
+The intended split after the admin migration:
+
+- **Vercel**: Next.js storefront and storefront API, Node functions in the Singapore region (`sin1`).
+- **VPS**: Express admin at the private slug, ideally close to the Turso `sin` region.
+- **Turso**: one shared database for both sides.
+
+Vercel environment:
+
+```dotenv
+TURSO_DATABASE_URL=libsql://...
+TURSO_AUTH_TOKEN=...
+ADMIN_BASE_URL=https://admin.example.com/ops-...
+COOKIE_SECURE=1
+SITE_URL=https://www.starfallenigma.com
+# Never set DB_PATH on Vercel.
+```
+
+Run `npm run seed:turso` once against the remote database, deploy, then keep the cutover gated until the admin can read the same Turso data.
 
 ### Local development and asset caching
 

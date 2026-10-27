@@ -3,18 +3,16 @@ import { notFound } from 'next/navigation';
 import ProductCard from '@/components/product-card';
 import { pageMetadata } from '@/lib/metadata';
 import { getSiteContext } from '@/lib/site';
-import { getDb } from '@/src/db';
-import { getProductBySlug, getRelatedProducts, categoryById } from '@/src/catalog-service';
+import { getProductBySlug, getRelatedProducts, categoryById } from '@/lib/catalog-service';
 import { cleanText } from '@/src/utils';
 
 type Props = { params: Promise<{ slug: string }> };
 
-function loadProduct(slug: string, lang: 'en' | 'id') {
-  const db = getDb();
-  const found = getProductBySlug(db, slug, lang);
+async function loadProduct(slug: string, lang: 'en' | 'id') {
+  const found = await getProductBySlug(slug, lang);
   if (!found) return null;
   const product = found.product as any;
-  const related = getRelatedProducts(db, product, lang, 4) as any[];
+  const related = await getRelatedProducts(product, lang, 4) as any[];
   const category = categoryById[product.category];
   return {
     product,
@@ -27,7 +25,7 @@ function loadProduct(slug: string, lang: 'en' | 'id') {
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   const site = await getSiteContext();
-  const data = loadProduct(slug, site.lang);
+  const data = await loadProduct(slug, site.lang);
   if (!data) return pageMetadata({ title: 'Starfall Enigma', noindex: true });
   return pageMetadata({
     title: `${data.product.name} — Starfall Enigma`,
@@ -40,7 +38,7 @@ export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
   const site = await getSiteContext();
   const { t, lang, money, wishlistIds } = site;
-  const data = loadProduct(slug, lang);
+  const data = await loadProduct(slug, lang);
   if (!data) notFound();
 
   const { product, related, categoryLabel, categoryDescription } = data;

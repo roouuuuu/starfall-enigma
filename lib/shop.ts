@@ -1,5 +1,4 @@
-import { getDb } from '@/src/db';
-import { getFacets, getShopMeta, listProducts, categoryById } from '@/src/catalog-service';
+import { getFacets, getShopMeta, listProducts, categoryById } from '@/lib/catalog-service';
 
 import type { FilterState, ShopFacets, ShopMeta, SizeGroup } from '@/components/shop-view';
 
@@ -32,13 +31,13 @@ export type ShopData = {
   sizeGroups: SizeGroup[];
 };
 
-export function buildShopData(
+export async function buildShopData(
   lang: 'en' | 'id',
   currency: string,
   exchangeRate: number,
   searchParams: SearchParams,
   categoryOverride = ''
-): ShopData {
+): Promise<ShopData> {
   const query: Record<string, string> = {};
   for (const [key, value] of Object.entries(searchParams)) query[key] = flat(value);
 
@@ -51,8 +50,7 @@ export function buildShopData(
   const metaCategory = categoryOverride || (selectedCategories.length === 1 ? selectedCategories[0] : '');
   const meta = getShopMeta(metaCategory, lang) as ShopMeta;
 
-  const db = getDb();
-  const result = listProducts(db, {
+  const result = await listProducts({
     ...query,
     page: query.page || 1,
     limit: 12,
@@ -60,7 +58,7 @@ export function buildShopData(
     rate: exchangeRate,
   }, lang) as { items: any[]; total: number; hasMore: boolean };
 
-  const facets = getFacets(db, lang) as ShopFacets;
+  const facets = await getFacets(lang) as ShopFacets;
 
   const filterState: FilterState = {
     category: selectedCategories,

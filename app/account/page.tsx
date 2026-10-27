@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { pageMetadata } from '@/lib/metadata';
 import { getSiteContext } from '@/lib/site';
-import { getDb } from '@/src/db';
+import { all, get } from '@/lib/db';
 import { statusLabel } from '@/src/utils';
 
 export async function generateMetadata() {
@@ -19,22 +19,27 @@ export default async function AccountPage() {
   if (!site.user) redirect(`/login?next=${encodeURIComponent('/account')}`);
 
   const { t, lang, money } = site;
-  const db = getDb();
-  const accountUser = db.prepare(
-    'SELECT id, email, first_name, last_name, phone, role, created_at FROM users WHERE id = ?'
-  ).get(Number(site.user.id)) as Record<string, any> | undefined;
+  const accountUser = await get<Record<string, any>>(
+    'SELECT id, email, first_name, last_name, phone, role, created_at FROM users WHERE id = ?',
+    [Number(site.user.id)]
+  );
 
   if (!accountUser) redirect('/login');
 
-  const addresses = db.prepare('SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, id DESC')
-    .all(Number(site.user.id)) as Array<Record<string, any>>;
-  const orders = db.prepare(
-    `SELECT o.*, (SELECT COUNT(*) FROM order_items oi WHERE oi.order_id = o.id) AS item_count
-     FROM orders o WHERE o.user_id = ? ORDER BY o.created_at DESC LIMIT 100`
-  ).all(Number(site.user.id)) as Array<Record<string, any>>;
-  const wishlistCount = Number(
-    (db.prepare('SELECT COUNT(*) AS count FROM wishlists WHERE user_id = ?').get(Number(site.user.id)) as { count: number }).count
+  const addresses = await all<Record<string, any>>(
+    'SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, id DESC',
+    [Number(site.user.id)]
   );
+  const orders = await all<Record<string, any>>(
+    `SELECT o.*, (SELECT COUNT(*) FROM order_items oi WHERE oi.order_id = o.id) AS item_count
+     FROM orders o WHERE o.user_id = ? ORDER BY o.created_at DESC LIMIT 100`,
+    [Number(site.user.id)]
+  );
+  const wishlistRow = await get<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM wishlists WHERE user_id = ?',
+    [Number(site.user.id)]
+  );
+  const wishlistCount = Number(wishlistRow?.count ?? 0);
 
   return (
     <>

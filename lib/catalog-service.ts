@@ -1,10 +1,10 @@
 import { CATEGORY_LIST, COLLECTIONS, MATERIALS, FINISHES } from "@/src/catalog";
 import { all, get, type Executor } from "@/lib/db";
-import { clamp, formatMoney, pagination } from "@/lib/utils";
+import { clamp, formatMoney, pagination, parseJson } from "@/lib/utils";
 
 type Row = Record<string, any>;
 
-const categoryById: Record<string, any> = Object.fromEntries(CATEGORY_LIST.map((category: any) => [category.id, category]));
+export const categoryById: Record<string, any> = Object.fromEntries(CATEGORY_LIST.map((category: any) => [category.id, category]));
 const collectionById: Record<string, any> = Object.fromEntries(COLLECTIONS.map((collection: any) => [collection.id, collection]));
 const materialById: Record<string, any> = Object.fromEntries(Object.entries(MATERIALS).map(([key, value]: [string, any]) => [value.en, { key, ...value }]));
 const finishById: Record<string, any> = Object.fromEntries(Object.entries(FINISHES).map(([key, value]: [string, any]) => [value.en, { key, ...value }]));
@@ -111,6 +111,19 @@ export function toProductCard(row: Row, variants: Row[] | undefined, lang = "en"
     variants: mapped,
     defaultVariant: firstAvailable,
     url: `/product/${row.slug}`
+  };
+}
+
+export function serializeProduct(row: Row, variants: Row[], lang = "en") {
+  const card = toProductCard(row, variants, lang);
+  return {
+    ...card,
+    description: lang === "id" ? row.description_id : row.description_en,
+    details: parseJson(lang === "id" ? row.details_id : row.details_en, null) ?? [],
+    care: lang === "id" ? row.care_id : row.care_en,
+    sku: row.sku,
+    categoryIntro: lang === "id" ? categoryById[row.category]?.description_id : categoryById[row.category]?.description_en,
+    createdAt: row.created_at
   };
 }
 
@@ -255,6 +268,136 @@ export async function getFacets(lang = "en", ex?: Executor) {
       count: Number(row.count)
     }))
   };
+}
+
+export function getShopMeta(categoryId = "", lang = "en") {
+  if (categoryId && categoryById[categoryId]) {
+    const category = categoryById[categoryId];
+    return {
+      id: category.id,
+      title: lang === "id" ? category.label_id : category.label_en,
+      intro: lang === "id" ? category.description_id : category.description_en,
+      image: category.image
+    };
+  }
+  return {
+    id: "",
+    title: lang === "id" ? "Koleksi" : "The Collection",
+    intro: lang === "id"
+      ? "Seluruh karya dalam arsip Starfall Enigma, dari tailoring terstruktur hingga sutra washed dan denim mentah."
+      : "Every piece in the Starfall Enigma archive, from structured tailoring to washed silk and raw denim.",
+    image: "/assets/img/editorial/model-03.jpg"
+  };
+}
+
+export async function getProductBySlug(slug: string, lang = "en", ex?: Executor) {
+  const row = await get<Row>(
+    "SELECT * FROM products WHERE slug = ? AND published = 1",
+    [String(slug)],
+    ex
+  );
+  if (!row) return null;
+  const variantMap = await getVariants([Number(row.id)], ex);
+  const variants = variantMap.get(Number(row.id)) || [];
+  return { row, product: serializeProduct(row, variants, lang) };
+}
+
+export async function getProductById(id: number, lang = "en", ex?: Executor) {
+  const row = await get<Row>(
+    "SELECT * FROM products WHERE id = ? AND published = 1",
+    [Number(id)],
+    ex
+  );
+  if (!row) return null;
+  const variantMap = await getVariants([Number(row.id)], ex);
+  return serializeProduct(row, variantMap.get(Number(row.id)) || [], lang);
+}
+
+export async function getRelatedProducts(product: Row, lang = "en", limit = 4, ex?: Executor) {
+  const rows = await all<Row>(
+    `SELECT p.*,
+       MIN(p.price_usd_cents + v.price_delta_cents) AS min_price,
+       MAX(p.price_usd_cents + v.price_delta_cents) AS max_price,
+       COALESCE(SUM(v.stock), 0) AS total_stock
+     FROM products p
+     LEFT JOIN variants v ON v.product_id = p.id
+     WHERE p.published = 1 AND p.category = ? AND p.id != ?
+     GROUP BY p.id
+     ORDER BY p.featured DESC, p.created_at DESC
+     LIMIT ?`,
+    [product.category, Number(product.id), Number(limit)],
+    ex
+  );
+  if (rows.length < limit) {
+    const remaining = Number(limit) - rows.length;
+    const excludeIds = [Number(product.id), ...rows.map((row) => Number(row.id))];
+    const fill = await all<Row>(
+      `SELECT p.*,
+         MIN(p.price_usd_cents + v.price_delta_cents) AS min_price,
+         MAX(p.price_usd_cents + v.price_delta_cents) AS max_price,
+         COALESCE(SUM(v.stock), 0) AS total_stock
+       FROM products p
+       LEFT JOIN variants v ON v.product_id = p.id
+       WHERE p.published = 1 AND p.id NOT IN (${excludeIds.map(() => "?").join(",")})
+       GROUP BY p.id
+       ORDER BY p.featured DESC, p.created_at DESC
+       LIMIT ?`,
+      [...excludeIds, remaining],
+      ex
+    );
+    rows.push(...fill);
+  }
+  const variantMap = await getVariants(rows.map((row) => Number(row.id)), ex);
+  return rows.map((row) => toProductCard(row, variantMap.get(Number(row.id)) || [], lang));
+}
+
+export async function getFeatured(lang = "en", limit = 4, mode = "featured", ex?: Executor) {
+  let order = "p.featured DESC, p.created_at DESC";
+  let extra = "";
+  if (mode === "new") {
+    order = "p.new_arrival DESC, p.created_at DESC";
+    extra = "AND p.new_arrival = 1";
+  } else if (mode === "bestseller") {
+    order = "p.bestseller DESC, p.created_at DESC";
+    extra = "AND p.bestseller = 1";
+  } else if (mode === "featured") {
+    extra = "AND p.featured = 1";
+  }
+  let rows = await all<Row>(
+    `SELECT p.*,
+       MIN(p.price_usd_cents + v.price_delta_cents) AS min_price,
+       MAX(p.price_usd_cents + v.price_delta_cents) AS max_price,
+       COALESCE(SUM(v.stock), 0) AS total_stock
+     FROM products p
+     LEFT JOIN variants v ON v.product_id = p.id
+     WHERE p.published = 1 ${extra}
+     GROUP BY p.id
+     ORDER BY ${order}
+     LIMIT ?`,
+    [Number(limit)],
+    ex
+  );
+  if (rows.length < limit) {
+    const exclude = rows.map((row) => Number(row.id));
+    const placeholders = exclude.length ? `AND p.id NOT IN (${exclude.map(() => "?").join(",")})` : "";
+    const fillRows = await all<Row>(
+      `SELECT p.*,
+         MIN(p.price_usd_cents + v.price_delta_cents) AS min_price,
+         MAX(p.price_usd_cents + v.price_delta_cents) AS max_price,
+         COALESCE(SUM(v.stock), 0) AS total_stock
+       FROM products p
+       LEFT JOIN variants v ON v.product_id = p.id
+       WHERE p.published = 1 ${placeholders}
+       GROUP BY p.id
+       ORDER BY p.created_at ASC
+       LIMIT ?`,
+      [...exclude, Number(limit) - rows.length],
+      ex
+    );
+    rows = [...rows, ...fillRows];
+  }
+  const variantMap = await getVariants(rows.map((row) => Number(row.id)), ex);
+  return rows.map((row) => toProductCard(row, variantMap.get(Number(row.id)) || [], lang));
 }
 
 export async function resolveCartItems(items: any, ex?: Executor) {

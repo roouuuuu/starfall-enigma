@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { get, run, transaction, type Executor } from "@/lib/db";
+import { all, get, run, transaction, type Executor } from "@/lib/db";
 import { AppError } from "@/lib/http";
 import { cleanMultiline, cleanText, dateOnly, isEmail, moneyIdr, normalizeEmail } from "@/lib/utils";
 import { resolveCartItems } from "@/lib/catalog-service";
@@ -256,4 +256,23 @@ export async function createWebsiteOrder({
       createdAt: now
     };
   });
+}
+
+export async function getOrderByNumber(number: string, ex?: Executor) {
+  return (await get<Record<string, any>>(
+    "SELECT * FROM orders WHERE order_number = ?",
+    [String(number)],
+    ex
+  )) ?? null;
+}
+
+export async function getOrderItems(orderId: number, ex?: Executor) {
+  return all<Record<string, any>>(
+    `SELECT oi.*, p.slug, p.image_a
+     FROM order_items oi JOIN products p ON p.id = oi.product_id
+     WHERE oi.order_id = ?
+     ORDER BY oi.id ASC`,
+    [Number(orderId)],
+    ex
+  );
 }

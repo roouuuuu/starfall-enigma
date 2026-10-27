@@ -2,8 +2,7 @@ import { notFound } from 'next/navigation';
 
 import { pageMetadata } from '@/lib/metadata';
 import { getSiteContext } from '@/lib/site';
-import { getDb } from '@/src/db';
-import { getOrderByNumber, getOrderItems } from '@/src/order-service';
+import { getOrderByNumber, getOrderItems } from '@/lib/order-service';
 import { formatMoney, statusLabel } from '@/src/utils';
 
 type Props = {
@@ -11,9 +10,8 @@ type Props = {
   searchParams: Promise<{ placed?: string }>;
 };
 
-function loadOrder(number: string, site: Awaited<ReturnType<typeof getSiteContext>>) {
-  const db = getDb();
-  const order = getOrderByNumber(db, number) as Record<string, any> | null;
+async function loadOrder(number: string, site: Awaited<ReturnType<typeof getSiteContext>>) {
+  const order = await getOrderByNumber(number);
   if (!order) return null;
   const authorized = Boolean(
     site.user?.role === 'admin' ||
@@ -21,13 +19,13 @@ function loadOrder(number: string, site: Awaited<ReturnType<typeof getSiteContex
     (order.session_hash && order.session_hash === site.sessionHash)
   );
   if (!authorized) return null;
-  return { order, items: getOrderItems(db, order.id) as Array<Record<string, any>> };
+  return { order, items: await getOrderItems(order.id) };
 }
 
 export async function generateMetadata({ params }: Props) {
   const { number } = await params;
   const site = await getSiteContext();
-  const data = loadOrder(number, site);
+  const data = await loadOrder(number, site);
   return pageMetadata({
     title: data ? `${site.lang === 'id' ? 'Pesanan' : 'Order'} ${data.order.order_number} — Starfall Enigma` : 'Starfall Enigma',
     description: '',
@@ -39,7 +37,7 @@ export default async function OrderPage({ params, searchParams }: Props) {
   const { number } = await params;
   const site = await getSiteContext();
   const { t, lang } = site;
-  const data = loadOrder(number, site);
+  const data = await loadOrder(number, site);
   if (!data) notFound();
 
   const { order, items } = data;

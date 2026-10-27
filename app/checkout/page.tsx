@@ -1,6 +1,6 @@
 import { pageMetadata } from '@/lib/metadata';
 import { getSiteContext } from '@/lib/site';
-import { getDb } from '@/src/db';
+import { all } from '@/lib/db';
 import { COUNTRIES } from '@/src/countries';
 
 export async function generateMetadata() {
@@ -15,10 +15,12 @@ export async function generateMetadata() {
 export default async function CheckoutPage() {
   const site = await getSiteContext();
   const { t, lang, currency } = site;
-  const db = getDb();
 
   const addresses = site.user
-    ? db.prepare('SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, id DESC').all(Number(site.user.id)) as Array<Record<string, any>>
+    ? await all<Record<string, any>>(
+        'SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, id DESC',
+        [Number(site.user.id)]
+      )
     : [];
   const defaultAddress = addresses[0] || null;
   const countries = COUNTRIES as string[];

@@ -134,6 +134,9 @@ export async function mergeWishlist(userId: number, ids: unknown) {
 }
 
 export async function getAdminBase() {
+  const explicit = String(process.env.ADMIN_BASE_URL || "").trim();
+  if (explicit) return explicit.replace(/\/+$/, "") || "/";
+
   const fromEnv = String(process.env.ADMIN_SLUG || "").trim().toLowerCase();
   if (fromEnv) return `/${fromEnv}`;
   const row = await get<{ value: string }>("SELECT value FROM settings WHERE key = 'admin_slug'");

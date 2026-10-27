@@ -32,7 +32,12 @@ const NEXT_PATHS = [
   /^\/order\/[^/]+\/?$/,
   /^\/login\/?$/,
   /^\/register\/?$/,
-  /^\/account\/?$/
+  /^\/account\/?$/,
+  /^\/preferences\/?$/,
+  /^\/go\/[^/]+\/?$/,
+  /^\/health\/?$/,
+  /^\/robots\.txt\/?$/,
+  /^\/sitemap\.xml\/?$/
 ];
 
 // Storefront APIs now run on Next route handlers (libSQL). The admin API lives
