@@ -3,7 +3,8 @@
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { execFileSync } = require('node:child_process');
+const net = require('node:net');
+const { execFileSync, spawn } = require('node:child_process');
 
 const ROOT = path.join(__dirname, '..');
 
@@ -108,23 +109,77 @@ function csrfFrom(html) {
   return meta ? meta[1] : '';
 }
 
-async function startTestServer(dbPath) {
-  const { createApp } = require('../src/server');
-  const app = createApp({ dbPath, liveReload: false });
-  const server = await new Promise((resolve) => {
-    const instance = app.listen(0, '127.0.0.1', () => resolve(instance));
+function freePort() {
+  return new Promise((resolve, reject) => {
+    const probe = net.createServer();
+    probe.once('error', reject);
+    probe.listen(0, '127.0.0.1', () => {
+      const { port } = probe.address();
+      probe.close(() => resolve(port));
+    });
   });
-  const address = server.address();
-  return {
-    app,
-    server,
-    db: app.get('db'),
-    baseUrl: `http://127.0.0.1:${address.port}`
-  };
+}
+
+// Tests boot the real server (Next.js storefront + Express admin) so the
+// storefront assertions cover the code that actually ships.
+async function startTestServer(dbPath) {
+  const port = await freePort();
+  const child = spawn(process.execPath, ['server.js'], {
+    cwd: ROOT,
+    env: {
+      ...process.env,
+      NODE_ENV: 'production',
+      NEXT_DIST_DIR: process.env.NEXT_DIST_DIR || '.next-test',
+      PORT: String(port),
+      DB_PATH: dbPath
+    },
+    stdio: ['ignore', 'pipe', 'pipe']
+  });
+
+  let log = '';
+  child.stdout.setEncoding('utf8');
+  child.stderr.setEncoding('utf8');
+  child.stdout.on('data', (chunk) => { log += chunk; });
+  child.stderr.on('data', (chunk) => { log += chunk; });
+
+  const baseUrl = `http://127.0.0.1:${port}`;
+  const deadline = Date.now() + 90000;
+  let ready = false;
+  while (Date.now() < deadline) {
+    if (child.exitCode !== null) {
+      throw new Error(`Test server exited with code ${child.exitCode}\n${log}`);
+    }
+    try {
+      const response = await fetch(`${baseUrl}/health`);
+      if (response.ok) {
+        ready = true;
+        break;
+      }
+    } catch (_) {
+      /* not listening yet */
+    }
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+
+  if (!ready) {
+    child.kill();
+    throw new Error(`Test server did not become ready in time\n${log}`);
+  }
+
+  const { DatabaseSync } = process.getBuiltinModule('node:sqlite');
+  const db = new DatabaseSync(dbPath);
+  return { app: null, server: child, db, baseUrl, log: () => log };
 }
 
 async function stopTestServer(server, db) {
-  if (server) await new Promise((resolve) => server.close(resolve));
+  if (server && typeof server.kill === 'function') {
+    const exited = new Promise((resolve) => server.once('exit', resolve));
+    const timer = new Promise((resolve) => setTimeout(resolve, 5000).unref());
+    server.kill();
+    await Promise.race([exited, timer]);
+  } else if (server) {
+    await new Promise((resolve) => server.close(resolve));
+  }
   if (db) {
     try { db.close(); } catch (_) { /* already closed */ }
   }

@@ -156,7 +156,7 @@ The seed does not randomise stock. It is deterministic so tests can rely on stab
 npm test
 ```
 
-The suite uses Node's built-in test runner and creates isolated temporary databases. It never writes to `data/starfall.sqlite`.
+The suite uses Node's built-in test runner and creates isolated temporary databases. It never writes to `data/starfall.sqlite`. Each run first builds the storefront into `.next-test` and boots the real `server.js` (Next.js + Express), so the page assertions cover the code that ships and tests can run while `npm run dev` is using `.next`.
 
 Coverage includes:
 
@@ -212,7 +212,7 @@ Open the private admin URL that the server prints, then `<private-url>/setup` to
 │  ├─ i18n.js              English/Indonesian dictionary and money/date formatting
 │  ├─ content.js           Journal, editorial credits and static copy
 │  └─ routes/              Public, account, auth and admin routes
-├─ views/                  Express admin templates (legacy storefront templates)
+├─ views/                  Express admin templates
 ├─ public/
 │  ├─ css/                 Storefront and admin styles
 │  ├─ js/                  Vanilla JS enhancements and admin clients

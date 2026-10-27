@@ -283,7 +283,7 @@ test('storefront, CSP, bilingual routes, search, and missing pages behave safely
   }
 
   const accountRedirect = await store.request('/account');
-  assert.equal(accountRedirect.status, 302);
+  assert.ok([302, 307].includes(accountRedirect.status), `unexpected status ${accountRedirect.status}`);
   assert.match(accountRedirect.headers.get('location') || '', /^\/login\?next=/);
 
   const checkout = await expectPage(store, '/checkout');
@@ -435,7 +435,7 @@ test('customers can register, sync wishlists, manage addresses, and see order hi
   const logout = await customer.json('/api/auth/logout', { method: 'POST', csrf: account.token });
   assert.equal(logout.status, 200);
   const afterLogout = await customer.request('/account');
-  assert.equal(afterLogout.status, 302);
+  assert.ok([302, 307].includes(afterLogout.status), `unexpected status ${afterLogout.status}`);
   assert.match(afterLogout.headers.get('location') || '', /^\/login/);
 
   const freshGuest = new Client(ctx.baseUrl);

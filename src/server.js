@@ -11,12 +11,30 @@ const { csrfProtection } = require('./auth');
 const { resolveAdminSlug } = require('./admin-access');
 const { AppError, parseCookies, appendCookie, cookie, safeRedirect, cleanText, addUtm, isValidHttpUrl, escapeXml } = require('./utils');
 const { normalizeLanguage, normalizeCurrency } = require('./i18n');
-const { renderNotFound } = require('./routes/pages');
 const { mountLiveReload } = require('./live-reload');
 const { createAssetHelper } = require('./assets');
 
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const PORT = Number(process.env.PORT || 3000);
+
+// Express only renders the admin workspace now. Page errors and unknown page
+// URLs use this plain page unless the custom server hands over to Next.js.
+function fallbackPage({ lang, status, title, heading, message }) {
+  const home = lang === 'id' ? 'Beranda' : 'Home';
+  const shop = lang === 'id' ? 'Lihat semua' : 'Shop all';
+  return `<!DOCTYPE html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><link rel="stylesheet" href="/css/storefront.css"><title>${escapeXml(title)}</title></head><body><main id="main-content" class="error-page"><p class="eyebrow">SE / ${status}</p><h1>${escapeXml(heading)}</h1><p>${escapeXml(message)}</p><div class="error-actions"><a class="button button--solid" href="/">${home}</a><a class="button button--outline" href="/shop">${shop}</a></div></main></body></html>`;
+}
+
+function renderFallbackNotFound(req, res) {
+  const lang = req.lang === 'id' ? 'id' : 'en';
+  return res.status(404).type('html').send(fallbackPage({
+    lang,
+    status: 404,
+    title: lang === 'id' ? 'Halaman tidak ditemukan — Starfall Enigma' : 'Page not found — Starfall Enigma',
+    heading: lang === 'id' ? 'Halaman ini telah menghilang.' : 'This page has vanished.',
+    message: lang === 'id' ? 'Halaman yang Anda cari tidak ada.' : 'The page you are looking for does not exist.'
+  }));
+}
 
 function securityHeaders(req, res, next) {
   const nonce = crypto.randomBytes(16).toString('base64');
@@ -124,7 +142,7 @@ function createApp(options = {}) {
     if (req.path.startsWith('/api/')) {
       return next(new AppError(404, 'API endpoint not found.', 'not_found'));
     }
-    return renderNotFound(req, res);
+    return renderFallbackNotFound(req, res);
   });
 
   app.get('/favicon.ico', (req, res) => {
@@ -220,7 +238,6 @@ function createApp(options = {}) {
   app.use('/api', api);
 
   app.use(require('./routes/pages-admin'));
-  app.use(require('./routes/pages'));
 
   app.use((req, res, next) => {
     if (req.path.startsWith('/api/')) return next(new AppError(404, 'API endpoint not found.', 'not_found'));
@@ -233,7 +250,7 @@ function createApp(options = {}) {
       req.headers['x-se-url'] = req.originalUrl || req.path;
       return nextNotFound(req, res);
     }
-    return renderNotFound(req, res);
+    return renderFallbackNotFound(req, res);
   });
 
   app.use((error, req, res, next) => {
@@ -255,19 +272,19 @@ function createApp(options = {}) {
         }
       });
     }
-    return res.status(safeStatus).render('error', {
-      pageTitle: safeStatus === 404
+    return res.status(safeStatus).type('html').send(fallbackPage({
+      lang,
+      status: safeStatus,
+      title: safeStatus === 404
         ? (lang === 'id' ? 'Halaman tidak ditemukan — Starfall Enigma' : 'Page not found — Starfall Enigma')
         : (lang === 'id' ? 'Terjadi kesalahan — Starfall Enigma' : 'Something went wrong — Starfall Enigma'),
-      metaDescription: '',
-      bodyClass: 'page-error',
-      activeNav: '',
-      noindex: true,
-      status: safeStatus,
+      heading: safeStatus === 404
+        ? (lang === 'id' ? 'Halaman ini telah menghilang.' : 'This page has vanished.')
+        : (lang === 'id' ? 'Langit sedang gelap.' : 'The sky has gone dark.'),
       message: safeStatus === 404
         ? (lang === 'id' ? 'Halaman yang Anda cari tidak ada.' : 'The page you are looking for does not exist.')
         : message
-    });
+    }));
   });
 
   return app;
