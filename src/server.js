@@ -224,6 +224,15 @@ function createApp(options = {}) {
 
   app.use((req, res, next) => {
     if (req.path.startsWith('/api/')) return next(new AppError(404, 'API endpoint not found.', 'not_found'));
+    // The custom server hands its Next handler to Express so unmatched page
+    // URLs still render the React 404 page. Tests run without a handler and
+    // keep the Express template.
+    const nextNotFound = req.app.get('nextNotFound');
+    if (nextNotFound && req.accepts('html')) {
+      req.headers['x-se-path'] = req.path;
+      req.headers['x-se-url'] = req.originalUrl || req.path;
+      return nextNotFound(req, res);
+    }
     return renderNotFound(req, res);
   });
 

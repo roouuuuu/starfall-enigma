@@ -131,6 +131,7 @@ async function main() {
   const nextApp = next({ dev, dir: __dirname });
   await nextApp.prepare();
   const handle = nextApp.getRequestHandler();
+  expressApp.set('nextNotFound', handle);
 
   const server = http.createServer((req, res) => {
     let pathname;

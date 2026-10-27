@@ -1,6 +1,6 @@
 # Starfall Enigma
 
-**Starfall Enigma** is an original gothic-luxury apparel e-commerce demo built with local Node.js, Express, EJS, SQLite and server-rendered HTML. It includes a bilingual (English / Bahasa Indonesia) storefront, a secure Indonesian admin workspace, inventory movements, manual sales channels and a cash-basis finance ledger in IDR.
+**Starfall Enigma** is an original gothic-luxury apparel e-commerce demo: a Next.js (React) storefront and an Express admin workspace on one Node.js process, backed by SQLite. It includes a bilingual (English / Bahasa Indonesia) storefront, a secure Indonesian admin workspace, inventory movements, manual sales channels and a cash-basis finance ledger in IDR.
 
 > **Demo notice:** checkout is intentionally a demo. No real payment is processed, no card data is collected, no email is sent, and no shipment is created. The social links are outbound links only; there is no marketplace synchronisation or artificial traffic generation.
 
@@ -12,7 +12,7 @@ The brand, product catalogue, product copy, SVG packshots and visual direction a
 
 - Node.js **22.5 or newer** (`node:sqlite` is built in). Node 24 LTS or newer is recommended.
 - npm.
-- No external database, paid API or build tool is required.
+- No external database or paid API is required. Next.js and React are the only build tooling.
 
 No environment file is loaded automatically. Set environment variables in the shell or the process manager.
 
@@ -27,10 +27,13 @@ No environment file is loaded automatically. Set environment variables in the sh
 ```bash
 npm install
 npm run seed:reset
+npm run build
 npm start
 ```
 
 Open `http://localhost:3000`.
+
+`npm start` runs `node server.js`, which serves the compiled Next.js storefront and the Express admin from one port. Run `npm run build` again after changing anything under `app/`, `components/` or `lib/`. During development use `npm run dev`, which compiles pages on demand.
 
 Start with a fresh database if `data/starfall.sqlite` does not exist yet:
 
@@ -46,13 +49,22 @@ Static files are served with `Cache-Control: no-cache` plus an `ETag`. Every pag
 
 Stylesheet and script URLs also carry a `?v=` version derived from the newest file in `public/css`, `public/js` and `public/assets/fonts`, so a restart after a change produces a new URL that no browser or proxy can serve from an older cache.
 
-In development (`NODE_ENV` unset) the server also watches `public/` and `views/` and pushes changes over Server-Sent Events at `/__dev/reload`:
+In development (`NODE_ENV` unset) the Next.js storefront runs in dev mode with Fast Refresh. The Express side also watches `public/` and `views/` and pushes changes over Server-Sent Events at `/__dev/reload`:
 
 - CSS edits swap the stylesheet in place, keeping scroll position and page state.
 - Template and script edits reload the page automatically.
 - `src/` edits restart the process through `npm run dev`; the page reloads once the server is back.
 
 Both the endpoint and the injected `dev-live-reload.js` are disabled when `NODE_ENV=production`. Tests run with live reload off.
+
+### Storefront architecture
+
+The storefront is a Next.js App Router app rendered on the server. `server.js` chooses per request: storefront URLs go to Next.js, and everything else (`/api/*`, the private admin workspace, `/css`, `/js`, `/assets`, `/preferences`, `/go/:platform`, `/health`, the sitemap and robots) stays on Express.
+
+- Pages are server components that read SQLite directly through `lib/site.ts` and the existing service modules; no internal HTTP hop.
+- `public/js/app.js` and the per-page scripts still run in the browser. They load after hydration because they write bag and wishlist state the server cannot know, which would otherwise look like a hydration mismatch.
+- The bag and wishlist keep their existing `localStorage` keys, and mutations still call the Express `/api/*` endpoints with the same CSRF token.
+- Unknown storefront URLs render the React 404 page through the Express fallback chain.
 
 ### Private admin URL
 
@@ -182,6 +194,12 @@ Open the private admin URL that the server prints, then `<private-url>/setup` to
 
 ```text
 .
+├─ server.js               Custom server: Next.js storefront + Express admin on one port
+├─ app/                    Next.js App Router pages (storefront)
+├─ components/             React storefront components (header, footer, overlays, cards)
+├─ lib/                    Server-side helpers for the Next.js storefront
+├─ proxy.ts                Per-request CSP nonce for Next.js pages
+├─ next.config.ts          Next.js configuration
 ├─ src/
 │  ├─ server.js            Express app, security headers, preferences, social redirects
 │  ├─ db.js                SQLite connection, schema and settings helpers
@@ -194,7 +212,7 @@ Open the private admin URL that the server prints, then `<private-url>/setup` to
 │  ├─ i18n.js              English/Indonesian dictionary and money/date formatting
 │  ├─ content.js           Journal, editorial credits and static copy
 │  └─ routes/              Public, account, auth and admin routes
-├─ views/                  EJS storefront and admin templates
+├─ views/                  Express admin templates (legacy storefront templates)
 ├─ public/
 │  ├─ css/                 Storefront and admin styles
 │  ├─ js/                  Vanilla JS enhancements and admin clients
@@ -214,7 +232,7 @@ Open the private admin URL that the server prints, then `<private-url>/setup` to
 - Authentication and setup endpoints are rate-limited. The limiter is in-memory in this demo and resets when the process restarts.
 - All state-changing requests require a per-session CSRF token; tokens are compared in constant time.
 - Admin pages live behind a randomly generated private slug stored in the database; `/admin`, `/setup` and the bare `/api/admin/*` paths answer `404` for everyone.
-- EJS escapes dynamic output by default. Admin inputs are validated and cleaned on the server.
+- Admin templates escape dynamic output by default; React escapes storefront output. Admin inputs are validated and cleaned on the server.
 - CSP uses a per-request nonce and prohibits third-party scripts, fonts and images.
 - Security headers include `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, a strict referrer policy, a restrictive permissions policy and `Cross-Origin-Opener-Policy: same-origin`.
 - `req.user` and admin view locals contain only safe account fields; password hashes are not attached to requests or render contexts.
