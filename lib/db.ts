@@ -27,9 +27,26 @@ export type Executor = {
   execute: (s: { sql: string; args?: InArgs }) => Promise<any>;
 };
 
+// Applied lazily on the first query so a build never opens a network
+// connection just by importing this module.
+let ready: Promise<void> | null = null;
+function ensureReady() {
+  if (!ready) {
+    ready = (async () => {
+      await client.execute("PRAGMA foreign_keys = ON");
+      await client.execute("PRAGMA busy_timeout = 5000");
+    })().catch(() => {
+      // Remote Turso may ignore these pragmas; they are only hardening for
+      // the local file used by tests and single-process demos.
+    });
+  }
+  return ready;
+}
+
 export const nowIso = () => new Date().toISOString();
 
 export async function all<T = Row>(sql: string, args: InArgs = [], ex: Executor = client): Promise<T[]> {
+  await ensureReady();
   const rs = await ex.execute({ sql, args });
   return rs.rows.map((r: any) =>
     Object.fromEntries(rs.columns.map((c: string, i: number) => [c, r[i]]))
@@ -41,6 +58,7 @@ export async function get<T = Row>(sql: string, args: InArgs = [], ex: Executor 
 }
 
 export async function run(sql: string, args: InArgs = [], ex: Executor = client) {
+  await ensureReady();
   const rs = await ex.execute({ sql, args });
   return {
     changes: rs.rowsAffected as number,
@@ -49,6 +67,7 @@ export async function run(sql: string, args: InArgs = [], ex: Executor = client)
 }
 
 export async function transaction<T>(fn: (tx: Transaction) => Promise<T>): Promise<T> {
+  await ensureReady();
   const tx = await client.transaction("write");
   try {
     const result = await fn(tx);

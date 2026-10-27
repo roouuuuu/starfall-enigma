@@ -45,6 +45,20 @@ npm run seed
 
 `seed:reset` deletes the selected database and all of its data, then rebuilds the catalogue. It is destructive and must not be run against a live store.
 
+### Turso / remote database
+
+The storefront API routes use libSQL, so they can share a remote Turso database with the admin workspace. Create the database in the Turso dashboard, then set `TURSO_DATABASE_URL` (`libsql://...`) and `TURSO_AUTH_TOKEN` in `.env.local` or in the Vercel/VPS environment.
+
+Seed a fresh Turso database with the same deterministic catalogue as the local seed:
+
+```bash
+npm run seed:turso
+```
+
+The script reads `.env.local` unless the variables are already set in the shell. It creates the schema, default settings and social links, then inserts 72 products, 360 variants and the opening inventory. It is idempotent: an already-seeded database is left alone. `--reset` rebuilds the catalogue only when no orders exist.
+
+`DB_PATH` always wins over `TURSO_DATABASE_URL`, which keeps tests and isolated demos on their own SQLite file. On Vercel, never set `DB_PATH`.
+
 ### Local development and asset caching
 
 Static files are served with `Cache-Control: no-cache` plus an `ETag`. Every page load revalidates: an unchanged file answers `304` with no body, a changed one comes back as `200` straight away. Visitors never need a hard refresh to pick up a new stylesheet.
