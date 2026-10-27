@@ -39,7 +39,6 @@
     ".next-test/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules",
-    "wip"
+    "node_modules"
   ]
 }

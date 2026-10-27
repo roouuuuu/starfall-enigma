@@ -14,12 +14,14 @@ The brand, product catalogue, product copy, SVG packshots and visual direction a
 - npm.
 - No external database or paid API is required. Next.js and React are the only build tooling.
 
-No environment file is loaded automatically. Set environment variables in the shell or the process manager.
+No environment file is loaded automatically by the Express side. The Next.js side reads `.env.local` / `.env` in the usual Next.js way, so `TURSO_*` values can live there; shell variables still win.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `PORT` | `3000` | HTTP port |
-| `DB_PATH` | `data/starfall.sqlite` | SQLite path, resolved from the project root |
+| `DB_PATH` | `data/starfall.sqlite` | SQLite path, resolved from the project root. It overrides `TURSO_DATABASE_URL`, which keeps tests and isolated demos on their own file |
+| `TURSO_DATABASE_URL` | `file:data/starfall.sqlite` | libSQL URL used by the Next.js API routes (`file:...` locally, `libsql://...` for Turso) |
+| `TURSO_AUTH_TOKEN` | unset | Turso auth token when `TURSO_DATABASE_URL` points at a remote database |
 | `COOKIE_SECURE` | unset | Set to `1` when serving over HTTPS so the session cookie is `Secure` |
 | `ADMIN_SLUG` | generated | Optional fixed private slug for the admin workspace (lowercase letters, digits, hyphens) |
 ## Quick start
@@ -59,12 +61,14 @@ Both the endpoint and the injected `dev-live-reload.js` are disabled when `NODE_
 
 ### Storefront architecture
 
-The storefront is a Next.js App Router app rendered on the server. `server.js` chooses per request: storefront URLs go to Next.js, and everything else (`/api/*`, the private admin workspace, `/css`, `/js`, `/assets`, `/preferences`, `/go/:platform`, `/health`, the sitemap and robots) stays on Express.
+The storefront is a Next.js App Router app rendered on the server. `server.js` chooses per request: storefront pages and the storefront APIs go to Next.js, and everything else (the private admin workspace and its API, `/api/setup`, `/css`, `/js`, `/assets`, `/preferences`, `/go/:platform`, `/health`, the sitemap and robots) stays on Express.
 
 - Pages are server components that read SQLite directly through `lib/site.ts` and the existing service modules; no internal HTTP hop.
+- Storefront APIs (`/api/products`, `/api/promo`, `/api/cart/resolve`, `/api/newsletter`, `/api/wishlist`, `/api/orders`, `/api/auth/*`, `/api/account/*`) are Next.js route handlers on top of libSQL (`lib/db.ts`, `lib/catalog-service.ts`, `lib/order-service.ts`, `lib/auth.ts`). They share the same session table and CSRF token as the Express admin, so a sign-in works across both.
+- `DB_PATH` keeps tests and isolated demos on their own SQLite file; without it the API layer follows `TURSO_DATABASE_URL` and can talk to a remote Turso database.
 - `public/js/app.js` and the per-page scripts still run in the browser. They load after hydration because they write bag and wishlist state the server cannot know, which would otherwise look like a hydration mismatch.
-- The bag and wishlist keep their existing `localStorage` keys, and mutations still call the Express `/api/*` endpoints with the same CSRF token.
-- Unknown storefront URLs render the React 404 page through the Express fallback chain.
+- The bag and wishlist keep their existing `localStorage` keys, and mutations call the Next.js `/api/*` endpoints with the same CSRF token.
+- Unknown storefront URLs render the React 404 page through the Express fallback chain, while unknown `/api/*` paths still return JSON 404 from Express.
 
 ### Private admin URL
 
@@ -195,9 +199,9 @@ Open the private admin URL that the server prints, then `<private-url>/setup` to
 ```text
 .
 ├─ server.js               Custom server: Next.js storefront + Express admin on one port
-├─ app/                    Next.js App Router pages (storefront)
+├─ app/                    Next.js App Router pages and API route handlers
 ├─ components/             React storefront components (header, footer, overlays, cards)
-├─ lib/                    Server-side helpers for the Next.js storefront
+├─ lib/                    Next.js helpers: site context, libSQL data layer, API services
 ├─ proxy.ts                Per-request CSP nonce for Next.js pages
 ├─ next.config.ts          Next.js configuration
 ├─ src/
@@ -219,6 +223,7 @@ Open the private admin URL that the server prints, then `<private-url>/setup` to
 │  └─ assets/              SVG packshots, editorial images, fonts and brand marks
 ├─ scripts/
 │  ├─ seed.js              Deterministic catalogue and stock seed
+│  ├─ migrate.mjs          libSQL/Turso schema and settings migration
 │  └─ generate-assets.js   Original SVG packshot generator
 ├─ tests/                  Node test suites and isolated test helpers
 ├─ data/                   Local SQLite database and temporary backups

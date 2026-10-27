@@ -13,9 +13,9 @@ const { JOURNAL } = require('./src/content');
 const PORT = Number(process.env.PORT || 3000);
 const dev = process.env.NODE_ENV !== 'production';
 
-// Storefront routes that Next.js owns. Everything else — the admin workspace,
-// /api/*, /css, /js and /assets — is still served by the Express app.
-// Add a path here when its EJS page has been ported.
+// Storefront pages and storefront APIs are owned by Next.js. The private admin
+// workspace and its API, /api/setup, /css, /js, /assets and the rest stay on
+// Express. Add a path here when something moves to Next.
 const NEXT_PATHS = [
   /^\/$/,
   /^\/journal(?:\/[^/]+)?\/?$/,
@@ -35,6 +35,23 @@ const NEXT_PATHS = [
   /^\/account\/?$/
 ];
 
+// Storefront APIs now run on Next route handlers (libSQL). The admin API lives
+// under the private slug and stays on Express, as do legacy /api/admin and
+// /api/setup, which must keep answering JSON 404.
+const NEXT_API_PATHS = [
+  /^\/api\/products\/?$/,
+  /^\/api\/promo\/?$/,
+  /^\/api\/cart\/resolve\/?$/,
+  /^\/api\/newsletter\/?$/,
+  /^\/api\/wishlist(?:\/[^/]+)?\/?$/,
+  /^\/api\/orders\/?$/,
+  /^\/api\/auth\/(?:login|register|logout)\/?$/,
+  /^\/api\/account\/profile\/?$/,
+  /^\/api\/account\/password\/?$/,
+  /^\/api\/account\/addresses(?:\/[^/]+(?:\/default)?)?\/?$/
+];
+
+
 const SESSION_COOKIE_OPTIONS = {
   name: SESSION_COOKIE,
   httpOnly: true,
@@ -46,6 +63,7 @@ const SESSION_COOKIE_OPTIONS = {
 
 function isNextPath(pathname) {
   if (pathname.startsWith('/_next') || pathname.startsWith('/__nextjs')) return true;
+  if (NEXT_API_PATHS.some((pattern) => pattern.test(pathname))) return true;
   if (!NEXT_PATHS.some((pattern) => pattern.test(pathname))) return false;
   return detailsExist(pathname);
 }
