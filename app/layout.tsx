@@ -4,11 +4,13 @@ import { headers } from 'next/headers';
 import SiteHeader from '@/components/site-header';
 import SiteFooter from '@/components/site-footer';
 import Overlays from '@/components/overlays';
+import DeferredScripts from '@/components/deferred-scripts';
 import { resolvePage } from '@/lib/routes';
 import { getSiteContext } from '@/lib/site';
 import { safeJson } from '@/src/utils';
 
 export const dynamic = 'force-dynamic';
+
 
 export const metadata: Metadata = {
   title: {
@@ -84,10 +86,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           nonce={nonce}
           dangerouslySetInnerHTML={{ __html: `window.SE = ${safeJson(clientState)};` }}
         />
-        <script src="/js/app.js" defer />
-        {page.scripts.map((src) => (
-          <script key={src} src={src} defer />
-        ))}
+        <DeferredScripts sources={['/js/app.js', ...page.scripts]} />
       </body>
     </html>
   );

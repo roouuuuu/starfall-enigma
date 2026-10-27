@@ -6,6 +6,9 @@ const next = require('next');
 const { createApp } = require('./src/server');
 const { SESSION_COOKIE, SESSION_TTL_MS, createSession } = require('./src/auth');
 const { parseCookies, hashToken, cookie, appendCookie } = require('./src/utils');
+const { getDb } = require('./src/db');
+const { categoryById } = require('./src/catalog-service');
+const { JOURNAL } = require('./src/content');
 
 const PORT = Number(process.env.PORT || 3000);
 const dev = process.env.NODE_ENV !== 'production';
@@ -20,7 +23,11 @@ const NEXT_PATHS = [
   /^\/stores\/?$/,
   /^\/client-care\/?$/,
   /^\/legal\/?$/,
-  /^\/credits\/?$/
+  /^\/credits\/?$/,
+  /^\/shop\/?$/,
+  /^\/shop\/[^/]+\/?$/,
+  /^\/product\/[^/]+\/?$/,
+  /^\/wishlist\/?$/
 ];
 
 const SESSION_COOKIE_OPTIONS = {
@@ -34,7 +41,42 @@ const SESSION_COOKIE_OPTIONS = {
 
 function isNextPath(pathname) {
   if (pathname.startsWith('/_next') || pathname.startsWith('/__nextjs')) return true;
-  return NEXT_PATHS.some((pattern) => pattern.test(pathname));
+  if (!NEXT_PATHS.some((pattern) => pattern.test(pathname))) return false;
+  return detailsExist(pathname);
+}
+
+// Next renders a thrown notFound() on the client, so unknown slugs and
+// categories fall through to Express, which already answers them with the
+// server-rendered 404 page.
+function detailsExist(pathname) {
+  let match = /^\/shop\/([^/]+)\/?$/.exec(pathname);
+  if (match) {
+    const category = safeDecode(match[1]);
+    return Boolean(category && categoryById[category]);
+  }
+
+  match = /^\/product\/([^/]+)\/?$/.exec(pathname);
+  if (match) {
+    const slug = safeDecode(match[1]);
+    if (!slug) return false;
+    return Boolean(getDb().prepare('SELECT 1 FROM products WHERE slug = ? AND published = 1').get(slug));
+  }
+
+  match = /^\/journal\/([^/]+)\/?$/.exec(pathname);
+  if (match) {
+    const slug = safeDecode(match[1]);
+    return Boolean(slug && JOURNAL.some((item) => item.slug === slug));
+  }
+
+  return true;
+}
+
+function safeDecode(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch (_) {
+    return '';
+  }
 }
 
 function isDocumentRequest(req) {

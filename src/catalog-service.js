@@ -302,7 +302,7 @@ function listProducts(db, query = {}, lang = 'en') {
     GROUP BY p.id
     ${havingSql}
   `;
-  const total = Number(db.prepare(`SELECT COUNT(*) AS count FROM (SELECT p.id ${base})`).get(...params).count);
+  const total = Number(db.prepare(`SELECT COUNT(*) AS count FROM (SELECT p.id, COALESCE(SUM(v.stock), 0) AS total_stock ${base})`).get(...params).count);
   const rows = db.prepare(
     `SELECT p.*,
        MIN(p.price_usd_cents + v.price_delta_cents) AS min_price,
