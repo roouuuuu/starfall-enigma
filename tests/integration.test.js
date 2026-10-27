@@ -859,4 +859,5 @@ test('static assets always revalidate and the dev reload endpoint stays off', as
 
   const page = await expectPage(guest, '/');
   assert.doesNotMatch(page.text, /dev-live-reload/, 'the dev script is not injected');
+  assert.match(page.text, /\/css\/storefront\.css\?v=[a-z0-9]+/, 'asset URLs carry a version');
 });

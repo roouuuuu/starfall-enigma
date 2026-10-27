@@ -13,6 +13,7 @@ const { AppError, parseCookies, appendCookie, cookie, safeRedirect, cleanText, a
 const { normalizeLanguage, normalizeCurrency } = require('./i18n');
 const { renderNotFound } = require('./routes/pages');
 const { mountLiveReload } = require('./live-reload');
+const { createAssetHelper } = require('./assets');
 
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const PORT = Number(process.env.PORT || 3000);
@@ -81,6 +82,7 @@ function createApp(options = {}) {
     ? Boolean(options.liveReload)
     : process.env.NODE_ENV !== 'production';
   app.locals.devReload = liveReload;
+  app.locals.asset = createAssetHelper();
   if (liveReload) app.set('liveReload', mountLiveReload(app));
 
   // The admin workspace is mounted at a secret slug. Every starter URL is dead:

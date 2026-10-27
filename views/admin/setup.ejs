@@ -59,7 +59,7 @@
     </div>
   </section>
 </main>
-<script src="/js/admin-auth.js" defer></script>
-<% if (devReload) { %><script src="/js/dev-live-reload.js" data-dev-reload defer></script><% } %>
+<script src="<%= asset('/js/admin-auth.js') %>" defer></script>
+<% if (devReload) { %><script src="<%= asset('/js/dev-live-reload.js') %>" data-dev-reload defer></script><% } %>
 </body>
 </html>

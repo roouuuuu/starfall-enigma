@@ -10,8 +10,8 @@
   <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="/assets/fonts/files/cormorant-garamond-normal-300700-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/assets/fonts/files/jost-normal-300600-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="/assets/fonts/fonts.css">
-  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="<%= asset('/assets/fonts/fonts.css') %>">
+  <link rel="stylesheet" href="<%= asset('/css/admin.css') %>">
   <script nonce="<%= nonce %>">
     window.SE = {
       csrfToken: <%- safeJson(csrfToken || '') %>,

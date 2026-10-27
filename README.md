@@ -44,6 +44,8 @@ npm run seed
 
 Static files are served with `Cache-Control: no-cache` plus an `ETag`. Every page load revalidates: an unchanged file answers `304` with no body, a changed one comes back as `200` straight away. Visitors never need a hard refresh to pick up a new stylesheet.
 
+Stylesheet and script URLs also carry a `?v=` version derived from the newest file in `public/css`, `public/js` and `public/assets/fonts`, so a restart after a change produces a new URL that no browser or proxy can serve from an older cache.
+
 In development (`NODE_ENV` unset) the server also watches `public/` and `views/` and pushes changes over Server-Sent Events at `/__dev/reload`:
 
 - CSS edits swap the stylesheet in place, keeping scroll position and page state.
