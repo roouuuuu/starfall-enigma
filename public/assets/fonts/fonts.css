@@ -1,4 +1,15 @@
-/* Local webfonts ? SIL Open Font License. Source: Google Fonts. */
+/* Local webfonts. Cinzel, Cormorant Garamond and Jost: SIL Open Font License. Source: Google Fonts. */
+/* Spooky Memories by Keithzo: 1001Fonts Free For Personal Use License.
+   Personal use only - commercial use requires a license from the author.
+   See spooky-memories-license.txt. WOFF2 conversion permitted by the license. */
+@font-face {
+  font-family: 'Spooky Memories';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/files/spooky-memories-regular.woff2') format('woff2');
+}
+
 @font-face {
   font-family: 'Cinzel';
   font-style: normal;
