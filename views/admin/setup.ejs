@@ -1,0 +1,64 @@
+<%- include('partials/auth-head') %>
+<main class="admin-auth">
+  <section class="admin-auth-visual admin-auth-visual--setup">
+    <img src="/assets/img/editorial/cathedral.jpg" alt="Interior katedral gelap">
+    <div class="admin-auth-veil"></div>
+    <div class="admin-auth-brand">
+      <img src="/assets/img/logo-mark.svg" width="42" height="42" alt="">
+      <span>STARFALL<br>ENIGMA</span>
+    </div>
+    <div class="admin-auth-quote">
+      <span aria-hidden="true">✦</span>
+      <p>Ini adalah cahaya pertama. Satu-satunya kunci untuk arsip.</p>
+      <small>Penyiapan pertama / sekali pakai</small>
+    </div>
+    <div class="setup-step">01 / 01</div>
+  </section>
+  <section class="admin-auth-form-side">
+    <div class="admin-auth-form-top">
+      <a href="/">← Kembali ke toko</a>
+      <span>Penyiapan / ID</span>
+    </div>
+    <div class="admin-auth-form-wrap">
+      <p class="admin-eyebrow">Pertama kali / Akun pemilik</p>
+      <h1>Buat administrator</h1>
+      <p class="admin-auth-intro">Langkah ini hanya tersedia sekali. Setelah akun pemilik dibuat, halaman penyiapan akan menolak akses dan seluruh dasbor memerlukan login.</p>
+      <form data-admin-auth="setup" novalidate>
+        <div class="admin-field-row">
+          <div class="admin-field">
+            <label for="setup-first">Nama depan</label>
+            <input id="setup-first" name="firstName" type="text" autocomplete="given-name" required autofocus>
+          </div>
+          <div class="admin-field">
+            <label for="setup-last">Nama belakang</label>
+            <input id="setup-last" name="lastName" type="text" autocomplete="family-name">
+          </div>
+        </div>
+        <div class="admin-field">
+          <label for="setup-email">Email administrator</label>
+          <input id="setup-email" name="email" type="email" autocomplete="username" required>
+        </div>
+        <div class="admin-field">
+          <label for="setup-password">Kata sandi baru <small>min. 10 karakter</small></label>
+          <div class="admin-password-field">
+            <input id="setup-password" name="password" type="password" autocomplete="new-password" minlength="10" required>
+            <button type="button" data-admin-password-toggle aria-label="Tampilkan kata sandi">◐</button>
+          </div>
+        </div>
+        <div class="admin-field">
+          <label for="setup-confirm">Konfirmasi kata sandi</label>
+          <input id="setup-confirm" name="confirmPassword" type="password" autocomplete="new-password" minlength="10" required>
+        </div>
+        <div class="admin-alert" data-admin-auth-error hidden></div>
+        <button class="admin-button admin-button--primary admin-button--full" type="submit" data-admin-auth-submit>Buat administrator <span aria-hidden="true">↗</span></button>
+      </form>
+      <div class="admin-auth-foot">
+        <p>Stok katalog telah diisi. Tidak ada akun staf lain atau akun demo.</p>
+        <p class="admin-auth-disclaimer">Gunakan kata sandi unik. Tidak ada verifikasi email atau pemulihan kata sandi otomatis dalam demo ini.</p>
+      </div>
+    </div>
+  </section>
+</main>
+<script src="/js/admin-auth.js" defer></script>
+</body>
+</html>

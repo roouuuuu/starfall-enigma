@@ -1,0 +1,34 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main-content" class="wishlist-page" data-wishlist-page data-initial-count="<%= initialWishlist.length %>" data-signed-in="<%= user ? '1' : '0' %>">
+  <header class="wishlist-hero">
+    <p class="eyebrow"><%= t('common.wishlist') %> / SE</p>
+    <h1><%= t('wishlist.title') %></h1>
+    <p><%= t('wishlist.intro') %></p>
+    <span class="wishlist-hero-star" aria-hidden="true">✦</span>
+  </header>
+
+  <div class="wishlist-content">
+    <div class="wishlist-toolbar">
+      <p class="eyebrow"><span data-wishlist-count-label><%= initialWishlist.length %></span> <%= lang === 'id' ? 'karya disimpan' : 'pieces saved' %></p>
+      <button class="text-button" type="button" data-wishlist-move-all><%= t('wishlist.moveAll') %> <span aria-hidden="true">↗</span></button>
+    </div>
+    <div class="product-grid product-grid--four" data-wishlist-grid>
+      <% initialWishlist.forEach((product) => { %>
+        <%- include('partials/product-card', { product }) %>
+      <% }) %>
+    </div>
+    <div class="wishlist-empty" data-wishlist-empty <%= initialWishlist.length ? 'hidden' : '' %>>
+      <span class="wishlist-empty-mark" aria-hidden="true">✦</span>
+      <h2><%= t('wishlist.empty') %></h2>
+      <p><%= t('wishlist.emptyText') %></p>
+      <a class="button button--solid" href="/shop"><%= t('cart.startShopping') %> <span aria-hidden="true">↗</span></a>
+    </div>
+  </div>
+</main>
+<%- include('partials/footer') %>
+<%- include('partials/overlays') %>
+<%- include('partials/scripts') %>
+<script src="/js/wishlist.js" defer></script>
+</body>
+</html>

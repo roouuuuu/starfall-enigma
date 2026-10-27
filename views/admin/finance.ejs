@@ -1,0 +1,97 @@
+<%- include('partials/head') %>
+<div class="admin-shell">
+  <%- include('partials/sidebar') %>
+  <div class="admin-main">
+    <%- include('partials/topbar') %>
+    <main class="admin-content">
+      <section class="admin-kpi-grid admin-kpi-grid--three">
+        <article class="admin-kpi admin-kpi--dark"><div class="admin-kpi-head"><span>Total pemasukan</span><span class="admin-kpi-icon">↗</span></div><p class="admin-kpi-value" data-finance-income>—</p><p class="admin-kpi-note">Kas masuk pada periode</p></article>
+        <article class="admin-kpi"><div class="admin-kpi-head"><span>Total pengeluaran</span><span class="admin-kpi-icon">↙</span></div><p class="admin-kpi-value" data-finance-expense>—</p><p class="admin-kpi-note">Stok, biaya, dan entri manual</p></article>
+        <article class="admin-kpi admin-kpi--wine"><div class="admin-kpi-head"><span>Laba bersih</span><span class="admin-kpi-icon">✦</span></div><p class="admin-kpi-value" data-finance-net>—</p><p class="admin-kpi-note">Pemasukan − pengeluaran</p></article>
+      </section>
+
+      <section class="admin-toolbar admin-toolbar--actions">
+        <form class="admin-filter-form" data-finance-filter>
+          <label class="admin-date-inline">Dari <input type="date" name="from"></label>
+          <label class="admin-date-inline">Sampai <input type="date" name="to"></label>
+          <select name="type" aria-label="Jenis transaksi"><option value="">Semua jenis</option><option value="income">Pemasukan</option><option value="expense">Pengeluaran</option></select>
+          <label class="admin-search"><input type="search" name="search" placeholder="Cari deskripsi, kategori…"></label>
+          <button class="admin-button admin-button--small" type="submit">Filter</button>
+          <a class="admin-text-link" href="/admin/finance">Reset</a>
+        </form>
+        <div class="admin-toolbar-buttons">
+          <button class="admin-button admin-button--small" type="button" data-finance-export>Ekspor CSV</button>
+          <button class="admin-button admin-button--primary" type="button" data-finance-open>+ Catat transaksi</button>
+        </div>
+      </section>
+
+      <div class="admin-finance-layout">
+        <section class="admin-card">
+          <div class="admin-card-head admin-card-head--table">
+            <div><p class="admin-eyebrow">Buku kas</p><h2>Transaksi <small data-finance-count></small></h2></div>
+            <span class="admin-table-head-meta" data-finance-page-label></span>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead><tr><th>Tanggal</th><th>Jenis</th><th>Deskripsi</th><th>Sumber / Metode</th><th>Pesanan</th><th class="is-right">Nominal</th><th></th></tr></thead>
+              <tbody data-finance-tbody><tr><td colspan="7" class="admin-empty-cell">Memuat buku kas…</td></tr></tbody>
+            </table>
+          </div>
+          <div class="admin-pagination" data-finance-pagination></div>
+        </section>
+
+        <aside class="admin-side-stack">
+          <section class="admin-card">
+            <div class="admin-card-head"><div><p class="admin-eyebrow">Komposisi</p><h2>Per kategori</h2></div></div>
+            <div class="admin-category-breakdown" data-finance-categories><p class="admin-empty-text">Memuat…</p></div>
+          </section>
+          <section class="admin-card admin-card--note">
+            <span class="admin-note-mark" aria-hidden="true">✦</span>
+            <h3>Kas, bukan akuntansi formal</h3>
+            <p>Pemasukan website dicatat otomatis saat pesanan dibayar. Pembatalan membuat entri pembalik. Penjualan manual dan pengeluaran stok juga masuk ke buku kas. Semua nilai dalam IDR.</p>
+            <ul>
+              <li>Entri otomatis terkunci dari edit/hapus.</li>
+              <li>Entri manual dapat diedit selama tidak terkait pesanan.</li>
+              <li>CSV mengikuti filter periode dan pencarian aktif.</li>
+            </ul>
+          </section>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+
+<dialog class="admin-dialog" id="finance-dialog" data-finance-dialog>
+  <form class="admin-dialog-inner" data-finance-form novalidate>
+    <div class="admin-dialog-head">
+      <div><p class="admin-eyebrow">Buku kas manual</p><h2 data-finance-dialog-title>Catat transaksi</h2><p>Pemasukan atau pengeluaran di luar pesanan otomatis.</p></div>
+      <button class="admin-icon-button" type="button" data-dialog-close aria-label="Tutup">×</button>
+    </div>
+    <div class="admin-dialog-body">
+      <div class="admin-field-grid">
+        <div class="admin-field admin-field--full">
+          <label>Jenis transaksi</label>
+          <div class="admin-segmented" role="group">
+            <button type="button" class="is-active" data-finance-type="income">Pemasukan</button>
+            <button type="button" data-finance-type="expense">Pengeluaran</button>
+          </div>
+          <input type="hidden" name="type" value="income" data-finance-type-input>
+          <input type="hidden" name="id" data-finance-id>
+        </div>
+        <div class="admin-field"><label for="finance-amount">Nominal (IDR)</label><input id="finance-amount" name="amountIdr" type="number" min="1" step="1000" required></div>
+        <div class="admin-field"><label for="finance-date">Tanggal</label><input id="finance-date" name="entryDate" type="date" required></div>
+        <div class="admin-field"><label for="finance-category">Kategori</label><input id="finance-category" name="category" type="text" list="finance-categories-list" required><datalist id="finance-categories-list"><option value="Penjualan Manual"><option value="Pembelian Stok"><option value="Biaya Operasional"><option value="Sewa Studio"><option value="Pemasaran"><option value="Lainnya"></datalist></div>
+        <div class="admin-field"><label for="finance-source">Sumber</label><input id="finance-source" name="source" type="text" placeholder="Instagram, supplier, bank…"></div>
+        <div class="admin-field"><label for="finance-method">Metode pembayaran</label><input id="finance-method" name="paymentMethod" type="text" placeholder="Transfer, tunai, QRIS…"></div>
+        <div class="admin-field admin-field--full"><label for="finance-description">Deskripsi</label><input id="finance-description" name="description" type="text" maxlength="250" required></div>
+        <div class="admin-field admin-field--full"><label for="finance-note">Catatan</label><textarea id="finance-note" name="note" rows="3"></textarea></div>
+      </div>
+      <div class="admin-alert" data-finance-error hidden></div>
+    </div>
+    <div class="admin-dialog-actions">
+      <button class="admin-button" type="button" data-dialog-close>Batal</button>
+      <button class="admin-button admin-button--primary" type="submit" data-finance-submit>Simpan transaksi <span aria-hidden="true">↗</span></button>
+    </div>
+  </form>
+</dialog>
+<%- include('partials/foot') %>

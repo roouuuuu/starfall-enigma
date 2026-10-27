@@ -1,0 +1,18 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main-content" class="error-page">
+  <div class="error-orbit" aria-hidden="true"><span>✦</span></div>
+  <p class="eyebrow">SE / 404</p>
+  <h1><%= lang === 'id' ? 'Halaman ini telah menghilang.' : 'This page has vanished.' %></h1>
+  <p><%= message || (lang === 'id' ? 'Seperti bintang yang jatuh, ia meninggalkan jejak yang tidak bisa diikuti.' : 'Like a fallen star, it left a trace that cannot be followed.') %></p>
+  <div class="error-actions">
+    <a class="button button--solid" href="/"><%= t('common.home') %> <span aria-hidden="true">↗</span></a>
+    <a class="button button--outline" href="/shop"><%= t('nav.shopAll') %></a>
+  </div>
+  <span class="error-coordinates">06° 13′ S / 106° 49′ E</span>
+</main>
+<%- include('partials/footer') %>
+<%- include('partials/overlays') %>
+<%- include('partials/scripts') %>
+</body>
+</html>

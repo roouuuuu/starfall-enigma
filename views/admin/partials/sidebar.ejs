@@ -1,0 +1,28 @@
+<aside class="admin-sidebar" id="admin-sidebar" data-admin-sidebar>
+  <div class="admin-sidebar-head">
+    <a class="admin-brand" href="/admin">
+      <img src="/assets/img/logo-mark.svg" width="32" height="32" alt="">
+      <span><strong>STARFALL</strong><small>ENIGMA / ADMIN</small></span>
+    </a>
+    <button class="admin-sidebar-close" type="button" data-admin-menu-close aria-label="Tutup menu">×</button>
+  </div>
+  <div class="admin-sidebar-meta">
+    <span>Kendali atelier</span>
+    <span>IDR · LANGSUNG</span>
+  </div>
+  <nav class="admin-nav" aria-label="Navigasi dasbor">
+    <a href="/admin" class="<%= adminSection === 'dashboard' ? 'is-active' : '' %>"><span class="admin-nav-index">01</span><span>Ringkasan</span></a>
+    <a href="/admin/orders" class="<%= adminSection === 'orders' ? 'is-active' : '' %>"><span class="admin-nav-index">02</span><span>Pesanan</span><em data-admin-open-orders></em></a>
+    <a href="/admin/inventory" class="<%= adminSection === 'inventory' ? 'is-active' : '' %>"><span class="admin-nav-index">03</span><span>Stok & Inventaris</span><em data-admin-low-stock></em></a>
+    <a href="/admin/finance" class="<%= adminSection === 'finance' ? 'is-active' : '' %>"><span class="admin-nav-index">04</span><span>Keuangan</span></a>
+    <a href="/admin/customers" class="<%= adminSection === 'customers' ? 'is-active' : '' %>"><span class="admin-nav-index">05</span><span>Pelanggan</span></a>
+    <a href="/admin/social" class="<%= adminSection === 'social' ? 'is-active' : '' %>"><span class="admin-nav-index">06</span><span>Sosial & Klik</span></a>
+    <a href="/admin/settings" class="<%= adminSection === 'settings' ? 'is-active' : '' %>"><span class="admin-nav-index">07</span><span>Pengaturan</span></a>
+  </nav>
+  <div class="admin-sidebar-foot">
+    <a href="/" target="_blank" rel="noopener">Lihat toko <span aria-hidden="true">↗</span></a>
+    <button type="button" data-admin-logout>Keluar <span aria-hidden="true">→</span></button>
+    <p>Starfall Enigma<br><small>Demo niaga lokal</small></p>
+  </div>
+</aside>
+<div class="admin-sidebar-scrim" data-admin-scrim></div>

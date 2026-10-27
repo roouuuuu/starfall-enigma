@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1250" width="1000" height="1250" role="img" aria-labelledby="title desc">
+<title id="title">Thorn Crown Knit Vest - front study</title>
+<desc id="desc">Original Starfall Enigma vector packshot for Thorn Crown Knit Vest, Knitwear, front view.</desc>
+<defs>
+  <linearGradient id="bgBone" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0ebe1"/><stop offset=".55" stop-color="#e8e1d5"/><stop offset="1" stop-color="#c8bda9"/></linearGradient>
+  <linearGradient id="bgDark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#171719"/><stop offset=".6" stop-color="#0d0e10"/><stop offset="1" stop-color="#261a1c"/></linearGradient>
+  <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#29272a"/><stop offset="1" stop-color="#4a4549"/></linearGradient>
+  <filter id="shadow" x="-30%" y="-20%" width="160%" height="160%"><feDropShadow dx="0" dy="24" stdDeviation="24" flood-color="#000" flood-opacity=".18"/></filter>
+  <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="68" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 .06"/></feComponentTransfer></filter>
+</defs>
+<rect width="1000" height="1250" fill="url(#bgBone)"/>
+    <g opacity=".18" fill="none" stroke="#0d0e10">
+      <circle cx="500" cy="620" r="323"/>
+      <circle cx="500" cy="620" r="488" stroke-dasharray="2 14"/>
+      <path d="M100 120 L900 1130 M900 120 L100 1130" stroke-width=".6"/>
+    </g>
+    <g fill="#0d0e10" opacity=".35">
+      <circle cx="160" cy="190" r="2"/><circle cx="820" cy="260" r="1.5"/><circle cx="770" cy="980" r="2.5"/><circle cx="210" cy="1040" r="1.5"/>
+    </g>
+<g filter="url(#shadow)"><path d="M405 320 L452 292 Q500 326 548 292 L595 320 L610 790 L390 790 Z" fill="#29272a" stroke="#4a4549" stroke-width="2"/><path d="M430 350 L430 790 M570 350 L570 790" stroke="#c0b5a2" stroke-width="1" opacity=".45"/><path d="M400 790 Q500 820 600 790 M400 810 Q500 840 600 810" fill="none" stroke="#c0b5a2" stroke-width="2" opacity=".8"/></g><path d="M483 493.6 L493.2 483.4 L490.65 478.3 L502.55 466.4 L500.85 476.6 L517 483.4" fill="none" stroke="#c0b5a2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M139 264.8 L157.6 246.2 L152.95 236.9 L174.65 215.2 L171.55 233.8 L201 246.2" fill="none" stroke="#5b1821" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+<g fill="#4e4943" font-family="Georgia, 'Times New Roman', serif" text-anchor="middle">
+  <text x="500" y="1150" font-size="18" letter-spacing="7">STARFALL ENIGMA</text>
+  <text x="500" y="1182" font-size="13" letter-spacing="3" opacity=".72">SE-KN-022 / KNITWEAR</text>
+  <text x="500" y="1214" font-size="11" letter-spacing="2" opacity=".55">THORN CROWN KNIT VEST</text>
+</g>
+<rect width="1000" height="1250" filter="url(#grain)" opacity=".55"/>
+</svg>

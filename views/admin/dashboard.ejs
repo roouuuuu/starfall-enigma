@@ -1,0 +1,111 @@
+<%- include('partials/head') %>
+<div class="admin-shell">
+  <%- include('partials/sidebar') %>
+  <div class="admin-main">
+    <%- include('partials/topbar') %>
+    <main class="admin-content">
+      <section class="admin-toolbar">
+        <form class="admin-range-form" data-dashboard-range>
+          <div class="admin-field admin-field--inline"><label for="dashboard-from">Dari</label><input id="dashboard-from" type="date" name="from"></div>
+          <div class="admin-field admin-field--inline"><label for="dashboard-to">Sampai</label><input id="dashboard-to" type="date" name="to"></div>
+          <button class="admin-button admin-button--small" type="submit">Terapkan</button>
+        </form>
+        <div class="admin-toolbar-note">
+          <span class="admin-live-dot"></span>
+          <span data-dashboard-updated>Menghubungkan ke database…</span>
+          <button class="admin-icon-button" type="button" data-dashboard-refresh aria-label="Muat ulang data">↻</button>
+        </div>
+      </section>
+
+      <section class="admin-kpi-grid" aria-label="Indikator utama">
+        <article class="admin-kpi admin-kpi--dark">
+          <div class="admin-kpi-head"><span>Pemasukan</span><span class="admin-kpi-icon">↗</span></div>
+          <p class="admin-kpi-value" data-kpi-income>—</p>
+          <p class="admin-kpi-note"><span data-kpi-period>Periode berjalan</span> · IDR</p>
+          <div class="admin-kpi-line" aria-hidden="true"></div>
+        </article>
+        <article class="admin-kpi">
+          <div class="admin-kpi-head"><span>Pengeluaran</span><span class="admin-kpi-icon">↙</span></div>
+          <p class="admin-kpi-value" data-kpi-expense>—</p>
+          <p class="admin-kpi-note">Pembelian stok & biaya manual</p>
+        </article>
+        <article class="admin-kpi admin-kpi--wine">
+          <div class="admin-kpi-head"><span>Laba bersih</span><span class="admin-kpi-icon">✦</span></div>
+          <p class="admin-kpi-value" data-kpi-net>—</p>
+          <p class="admin-kpi-note">Kas masuk − kas keluar</p>
+        </article>
+        <article class="admin-kpi">
+          <div class="admin-kpi-head"><span>Pesanan</span><span class="admin-kpi-icon">◎</span></div>
+          <p class="admin-kpi-value" data-kpi-orders>—</p>
+          <p class="admin-kpi-note"><span data-kpi-paid>—</span> dibayar · <span data-kpi-units>—</span> unit</p>
+        </article>
+      </section>
+
+      <section class="admin-mini-grid" aria-label="Indikator tambahan">
+        <a href="/admin/orders" class="admin-mini-stat"><span>Pesanan terbuka</span><strong data-kpi-open>—</strong><small>Diproses & dikirim</small></a>
+        <a href="/admin/inventory?filter=low" class="admin-mini-stat admin-mini-stat--alert"><span>Stok menipis</span><strong data-kpi-low>—</strong><small><span data-kpi-out>—</span> varian habis</small></a>
+        <a href="/admin/customers" class="admin-mini-stat"><span>Pelanggan</span><strong data-kpi-customers>—</strong><small><span data-kpi-subscribers>—</span> surat terdaftar</small></a>
+        <a href="/admin/social" class="admin-mini-stat"><span>Klik sosial / 30h</span><strong data-kpi-social>—</strong><small>Hanya klik nyata</small></a>
+        <div class="admin-mini-stat"><span>Unit stok</span><strong data-kpi-stock>—</strong><small><span data-kpi-variants>—</span> varian</small></div>
+      </section>
+
+      <div class="admin-dashboard-grid">
+        <section class="admin-card admin-chart-card">
+          <div class="admin-card-head">
+            <div><p class="admin-eyebrow">Arus kas 14 hari</p><h2>Pemasukan & pengeluaran</h2></div>
+            <div class="admin-chart-legend"><span><i class="legend-income"></i>Pemasukan</span><span><i class="legend-expense"></i>Pengeluaran</span><span><i class="legend-net"></i>Bersih</span></div>
+          </div>
+          <div class="admin-chart" data-finance-chart>
+            <p class="admin-empty-text">Memuat grafik…</p>
+          </div>
+        </section>
+
+        <section class="admin-card admin-status-card">
+          <div class="admin-card-head">
+            <div><p class="admin-eyebrow">Pesanan</p><h2>Status</h2></div>
+            <a class="admin-text-link" href="/admin/orders">Semua ↗</a>
+          </div>
+          <div class="admin-status-list" data-status-list><p class="admin-empty-text">Memuat…</p></div>
+          <div class="admin-card-foot"><span>Total periode</span><strong data-status-total>—</strong></div>
+        </section>
+      </div>
+
+      <div class="admin-dashboard-grid admin-dashboard-grid--lower">
+        <section class="admin-card admin-orders-card">
+          <div class="admin-card-head">
+            <div><p class="admin-eyebrow">Terbaru</p><h2>Pesanan terakhir</h2></div>
+            <a class="admin-text-link" href="/admin/orders">Lihat semua ↗</a>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table admin-table--compact">
+              <thead><tr><th>Pesanan</th><th>Pelanggan</th><th>Kanal</th><th>Status</th><th class="is-right">Total</th></tr></thead>
+              <tbody data-recent-orders><tr><td colspan="5" class="admin-empty-cell">Memuat pesanan…</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside class="admin-side-stack">
+          <section class="admin-card">
+            <div class="admin-card-head"><div><p class="admin-eyebrow">Perhatian</p><h2>Stok menipis</h2></div><a class="admin-text-link" href="/admin/inventory?filter=low">Kelola ↗</a></div>
+            <div class="admin-low-stock" data-low-stock-list><p class="admin-empty-text">Memeriksa stok…</p></div>
+          </section>
+          <section class="admin-card">
+            <div class="admin-card-head"><div><p class="admin-eyebrow">Kanal</p><h2>Penjualan</h2></div></div>
+            <div class="admin-channel-list" data-channel-list><p class="admin-empty-text">Memuat…</p></div>
+          </section>
+        </aside>
+      </div>
+
+      <section class="admin-quick-actions">
+        <p class="admin-eyebrow">Aksi cepat</p>
+        <div>
+          <a class="admin-quick-action" href="/admin/orders?manual=1"><span>01</span><strong>Penjualan manual</strong><small>Instagram, TikTok, Shopee, offline</small><em>↗</em></a>
+          <a class="admin-quick-action" href="/admin/inventory"><span>02</span><strong>Terima stok</strong><small>Per varian + biaya pembelian</small><em>↗</em></a>
+          <a class="admin-quick-action" href="/admin/finance?new=expense"><span>03</span><strong>Catat pengeluaran</strong><small>Buku kas IDR</small><em>↗</em></a>
+          <a class="admin-quick-action" href="/admin/social"><span>04</span><strong>Atur tautan sosial</strong><small>Lacak klik keluar</small><em>↗</em></a>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<%- include('partials/foot') %>

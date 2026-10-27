@@ -1,0 +1,89 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main-content" class="care-page">
+  <header class="care-hero">
+    <div>
+      <p class="eyebrow"><%= t('care.kicker') %> / SE</p>
+      <h1><%= t('care.title') %></h1>
+      <p><%= t('care.intro') %></p>
+    </div>
+    <div class="care-hero-mark" aria-hidden="true">
+      <span class="care-hero-star">✦</span>
+      <span>SE / CARE</span>
+    </div>
+  </header>
+
+  <div class="care-layout">
+    <aside class="care-nav" aria-label="<%= t('nav.clientCare') %>">
+      <a href="#faq"><%= t('care.faqTitle') %></a>
+      <a href="#sizing"><%= t('care.sizeTitle') %></a>
+      <a href="#care"><%= t('care.careTitle') %></a>
+      <a href="#shipping"><%= t('care.shippingReturnsTitle') %></a>
+      <a href="#contact"><%= t('care.contactTitle') %></a>
+    </aside>
+    <div class="care-content">
+      <section id="faq" class="care-block">
+        <div class="care-block-head"><p class="eyebrow">01</p><h2><%= t('care.faqTitle') %></h2></div>
+        <div class="faq-list">
+          <% t('care.faq').forEach((faq, index) => { %>
+            <details <%= index === 0 ? 'open' : '' %>>
+              <summary><span><%= faq[0] %></span><span aria-hidden="true">+</span></summary>
+              <p><%= faq[1] %></p>
+            </details>
+          <% }) %>
+        </div>
+      </section>
+
+      <section id="sizing" class="care-block">
+        <div class="care-block-head"><p class="eyebrow">02</p><h2><%= t('care.sizeTitle') %></h2></div>
+        <p class="care-lead"><%= t('care.sizeIntro') %></p>
+        <div class="sizing-grid">
+          <div>
+            <h3><%= t('care.sizeApparelTitle') %></h3>
+            <p class="preline"><%= t('care.sizeApparel') %></p>
+          </div>
+          <div>
+            <h3><%= t('care.sizeWaistTitle') %></h3>
+            <p class="preline"><%= t('care.sizeWaist') %></p>
+          </div>
+        </div>
+      </section>
+
+      <section id="care" class="care-block">
+        <div class="care-block-head"><p class="eyebrow">03</p><h2><%= t('care.careTitle') %></h2></div>
+        <p class="care-lead"><%= t('care.careText') %></p>
+        <div class="care-notes">
+          <div><span aria-hidden="true">◐</span><h3><%= lang === 'id' ? 'Simpan' : 'Store' %></h3><p><%= lang === 'id' ? 'Gantung tailoring pada hanger berlapis dan simpan rajutan terlipat. Beri ruang agar kain bisa bernapas.' : 'Hang tailoring on a padded hanger and store knitwear folded. Leave room for the cloth to breathe.' %></p></div>
+          <div><span aria-hidden="true">✦</span><h3><%= lang === 'id' ? 'Rawat' : 'Maintain' %></h3><p><%= lang === 'id' ? 'Gunakan sikat pakaian lembut dan cuci sesekali dengan metode paling lembut yang disarankan.' : 'Use a soft clothes brush and wash sparingly with the gentlest method recommended.' %></p></div>
+          <div><span aria-hidden="true">↺</span><h3><%= lang === 'id' ? 'Kembalikan' : 'Restore' %></h3><p><%= lang === 'id' ? 'Untuk perbaikan atau penyesuaian, hubungi concierge. Layanan ini fiktif dalam demo.' : 'For repair or alteration, contact the concierge. This service is fictional in the demo.' %></p></div>
+        </div>
+      </section>
+
+      <section id="shipping" class="care-block">
+        <div class="care-block-head"><p class="eyebrow">04</p><h2><%= t('care.shippingReturnsTitle') %></h2></div>
+        <div class="shipping-grid">
+          <div><h3><%= t('care.shippingTitle') %></h3><p><%= t('care.shippingText') %></p></div>
+          <div><h3><%= t('care.returnsTitle') %></h3><p><%= t('care.returnsText') %></p></div>
+        </div>
+      </section>
+
+      <section id="contact" class="care-contact">
+        <div>
+          <p class="eyebrow">05</p>
+          <h2><%= t('care.contactTitle') %></h2>
+          <p><%= t('care.contactText') %></p>
+        </div>
+        <div class="care-contact-details">
+          <a href="mailto:<%= brandEmail %>"><span><%= t('care.email') %></span><%= brandEmail %></a>
+          <a href="tel:<%= supportPhone.replace(/\s/g, '') %>"><span><%= t('care.phone') %></span><%= supportPhone %></a>
+          <div><span><%= t('care.hours') %></span><%= t('care.hoursValue') %></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+<%- include('partials/footer') %>
+<%- include('partials/overlays') %>
+<%- include('partials/scripts') %>
+</body>
+</html>

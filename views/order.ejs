@@ -1,0 +1,102 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main-content" class="order-page">
+  <header class="order-hero">
+    <span class="order-hero-mark" aria-hidden="true">✦</span>
+    <p class="eyebrow"><%= placed ? t('checkout.successTitle') : `${t('checkout.orderNumber')} ${order.order_number}` %></p>
+    <h1><%= placed ? t('checkout.successTitle') : (lang === 'id' ? 'Detail pesanan' : 'Order detail') %></h1>
+    <p><%= placed ? t('checkout.successText') : (lang === 'id' ? 'Rincian catatan demo Anda.' : 'The details of your demo record.') %></p>
+    <div class="order-hero-meta">
+      <span class="order-status order-status--<%= order.status %>"><%= statusLabel %></span>
+      <span><%= formatDate(order.created_at) %></span>
+      <span><%= order.order_number %></span>
+    </div>
+  </header>
+
+  <% if (order.status === 'cancelled') { %>
+    <div class="order-banner"><strong><%= lang === 'id' ? 'Pesanan dibatalkan.' : 'Order cancelled.' %></strong><span><%= lang === 'id' ? 'Stok telah dikembalikan dan pemasukan dibalik dalam buku kas.' : 'Stock has been restored and income reversed in the ledger.' %></span></div>
+  <% } %>
+  <div class="demo-banner">
+    <span aria-hidden="true">✦</span>
+    <p><strong><%= t('checkout.paymentDemoTitle') %></strong> <%= t('checkout.successText') %></p>
+  </div>
+
+  <div class="order-layout">
+    <section class="order-main">
+      <div class="order-section-head">
+        <h2><%= lang === 'id' ? 'Karya dalam pesanan' : 'Pieces in this order' %></h2>
+        <span><%= items.length %> <%= lang === 'id' ? 'baris' : 'lines' %></span>
+      </div>
+      <div class="order-items">
+        <% items.forEach((item) => { %>
+          <div class="order-item">
+            <a href="/product/<%= item.slug %>" class="order-item-image"><img src="<%= item.image_a %>" alt="<%= item.product_name %>"></a>
+            <div class="order-item-copy">
+              <h3><a href="/product/<%= item.slug %>"><%= item.product_name %></a></h3>
+              <p><%= item.variant_label %> · <%= t('common.quantity') %> <%= item.quantity %></p>
+              <span><%= orderMoney(item.unit_price_usd_cents) %></span>
+            </div>
+            <strong><%= orderMoney(item.total_usd_cents) %></strong>
+          </div>
+        <% }) %>
+      </div>
+
+      <div class="order-info-grid">
+        <div>
+          <p class="eyebrow"><%= t('checkout.shippingAddress') %></p>
+          <address>
+            <strong><%= order.first_name %> <%= order.last_name %></strong>
+            <span><%= order.address1 %></span>
+            <% if (order.address2) { %><span><%= order.address2 %></span><% } %>
+            <span><%= order.city %><%= order.region ? `, ${order.region}` : '' %> <%= order.postal_code %></span>
+            <span><%= order.country %></span>
+          </address>
+        </div>
+        <div>
+          <p class="eyebrow"><%= t('footer.contact') %></p>
+          <p><%= order.email %></p>
+          <% if (order.phone) { %><p><%= order.phone %></p><% } %>
+          <% if (order.note) { %>
+            <p class="order-note-label"><%= t('checkout.noteLabel') %></p>
+            <p class="order-note"><%= order.note %></p>
+          <% } %>
+        </div>
+        <div>
+          <p class="eyebrow"><%= t('checkout.payment') %></p>
+          <p><strong><%= t('checkout.paymentDemoTitle') %></strong></p>
+          <p><%= lang === 'id' ? 'Tidak ada pembayaran nyata yang diambil.' : 'No real payment was taken.' %></p>
+        </div>
+      </div>
+    </section>
+
+    <aside class="order-summary">
+      <h2><%= t('checkout.orderSummary') %></h2>
+      <div class="order-summary-lines">
+        <div><span><%= t('common.subtotal') %></span><span><%= orderMoney(order.subtotal_usd_cents) %></span></div>
+        <% if (Number(order.discount_usd_cents) > 0) { %>
+          <div><span><%= t('checkout.discount') %> <%= order.promo_code ? `(${order.promo_code})` : '' %></span><span>−<%= orderMoney(order.discount_usd_cents) %></span></div>
+        <% } %>
+        <div><span><%= t('common.shipping') %></span><span><%= t('common.included') %></span></div>
+        <div class="order-summary-total"><span><%= t('common.total') %></span><span><%= orderMoney(order.total_usd_cents) %></span></div>
+      </div>
+      <% if (order.currency === 'USD') { %>
+        <p class="order-secondary-total">≈ <%= otherMoney(order.total_usd_cents) %> IDR</p>
+      <% } else { %>
+        <p class="order-secondary-total">≈ <%= formatMoney(order.total_usd_cents, 'USD', Number(order.exchange_rate)) %> USD</p>
+      <% } %>
+      <p class="order-currency-note"><%= lang === 'id' ? `Nilai tukar demo: 1 USD = ${Number(order.exchange_rate).toLocaleString('id-ID')} IDR` : `Demo exchange rate: 1 USD = ${Number(order.exchange_rate).toLocaleString('en-US')} IDR` %></p>
+      <div class="order-actions">
+        <button class="button button--outline button--full" type="button" data-print-order><%= t('checkout.print') %></button>
+        <a class="button button--solid button--full" href="/shop"><%= t('common.continueShopping') %> <span aria-hidden="true">↗</span></a>
+      </div>
+      <% if (user) { %><a class="text-link order-account-link" href="/account"><%= t('common.account') %> <span aria-hidden="true">↗</span></a><% } %>
+      <p class="order-help"><%= lang === 'id' ? 'Butuh bantuan?' : 'Need help?' %> <a href="mailto:<%= brandEmail %>"><%= brandEmail %></a></p>
+    </aside>
+  </div>
+</main>
+<%- include('partials/footer') %>
+<%- include('partials/overlays') %>
+<%- include('partials/scripts') %>
+<script src="/js/order.js" defer></script>
+</body>
+</html>

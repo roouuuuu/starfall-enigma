@@ -1,0 +1,107 @@
+<%- include('partials/head') %>
+<div class="admin-shell">
+  <%- include('partials/sidebar') %>
+  <div class="admin-main">
+    <%- include('partials/topbar') %>
+    <main class="admin-content">
+      <section class="admin-kpi-grid admin-kpi-grid--four admin-kpi-grid--compact" aria-label="Indikator stok">
+        <article class="admin-kpi"><div class="admin-kpi-head"><span>Varian</span><span class="admin-kpi-icon">◎</span></div><p class="admin-kpi-value" data-inventory-variants>—</p><p class="admin-kpi-note">SKU aktif dalam katalog</p></article>
+        <article class="admin-kpi"><div class="admin-kpi-head"><span>Unit tersedia</span><span class="admin-kpi-icon">✦</span></div><p class="admin-kpi-value" data-inventory-units>—</p><p class="admin-kpi-note">Total stok fisik</p></article>
+        <article class="admin-kpi admin-kpi--wine"><div class="admin-kpi-head"><span>Stok menipis</span><span class="admin-kpi-icon">!</span></div><p class="admin-kpi-value" data-inventory-low>—</p><p class="admin-kpi-note">Pada atau di bawah ambang</p></article>
+        <article class="admin-kpi"><div class="admin-kpi-head"><span>Habis</span><span class="admin-kpi-icon">×</span></div><p class="admin-kpi-value" data-inventory-out>—</p><p class="admin-kpi-note">Perlu perhatian segera</p></article>
+      </section>
+
+      <section class="admin-card">
+        <div class="admin-card-head admin-card-head--table">
+          <div><p class="admin-eyebrow">Level varian</p><h2>Stok saat ini <small data-inventory-count></small></h2></div>
+          <div class="admin-table-head-meta"><span data-inventory-page-label></span></div>
+        </div>
+        <form class="admin-inline-filter" data-inventory-filter>
+          <label class="admin-search"><input type="search" name="search" placeholder="Cari produk, SKU, varian…"></label>
+          <select name="filter" aria-label="Filter stok">
+            <option value="all">Semua stok</option>
+            <option value="low">Menipis</option>
+            <option value="out">Habis</option>
+          </select>
+          <button class="admin-button admin-button--small" type="submit">Filter</button>
+          <a class="admin-text-link" href="/admin/inventory">Reset</a>
+        </form>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Karya</th><th>SKU</th><th>Varian</th><th>Stok</th><th>Ambang</th><th>Status</th><th>Harga</th><th class="is-right">Aksi</th></tr></thead>
+            <tbody data-inventory-tbody><tr><td colspan="8" class="admin-empty-cell">Memuat stok…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="admin-pagination" data-inventory-pagination></div>
+      </section>
+
+      <section class="admin-card admin-movements-card">
+        <div class="admin-card-head admin-card-head--table">
+          <div><p class="admin-eyebrow">Jejak audit</p><h2>Pergerakan stok</h2><p>Setiap perubahan varian dicatat permanen dengan stok akhir dan admin pelaksana.</p></div>
+          <a class="admin-text-link" href="/admin/finance">Buku kas ↗</a>
+        </div>
+        <form class="admin-inline-filter" data-movements-filter>
+          <label class="admin-search"><input type="search" name="search" placeholder="Cari produk, referensi, supplier…"></label>
+          <select name="type" aria-label="Jenis pergerakan">
+            <option value="">Semua tipe</option>
+            <option value="opening">Stok awal</option>
+            <option value="in">Masuk</option>
+            <option value="sale">Penjualan</option>
+            <option value="return">Pengembalian</option>
+            <option value="adjustment">Penyesuaian</option>
+          </select>
+          <button class="admin-button admin-button--small" type="submit">Filter</button>
+          <a class="admin-text-link" href="/admin/inventory">Reset</a>
+        </form>
+        <div class="admin-table-wrap">
+          <table class="admin-table admin-table--compact">
+            <thead><tr><th>Waktu</th><th>Karya / Varian</th><th>Tipe</th><th>Perubahan</th><th>Stok akhir</th><th>Referensi</th><th>Oleh</th></tr></thead>
+            <tbody data-movements-tbody><tr><td colspan="7" class="admin-empty-cell">Memuat pergerakan…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="admin-pagination" data-movements-pagination></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<dialog class="admin-dialog" id="stock-dialog" data-stock-dialog>
+  <form class="admin-dialog-inner" data-stock-form novalidate>
+    <div class="admin-dialog-head">
+      <div><p class="admin-eyebrow">Penyesuaian stok</p><h2 data-stock-product>Varian</h2><p data-stock-meta></p></div>
+      <button class="admin-icon-button" type="button" data-dialog-close aria-label="Tutup">×</button>
+    </div>
+    <div class="admin-dialog-body">
+      <div class="admin-stock-summary">
+        <div><span>Stok saat ini</span><strong data-stock-current>0</strong></div>
+        <div><span>Ambang menipis</span><strong data-stock-threshold>0</strong></div>
+        <div><span>SKU</span><strong data-stock-sku>—</strong></div>
+      </div>
+      <div class="admin-field-grid">
+        <div class="admin-field admin-field--full">
+          <label>Jenis penyesuaian</label>
+          <div class="admin-segmented" role="group">
+            <button type="button" class="is-active" data-stock-action="receive">Terima stok</button>
+            <button type="button" data-stock-action="set">Set stok baru</button>
+          </div>
+          <input type="hidden" name="action" value="receive" data-stock-action-input>
+          <input type="hidden" name="variantId" data-stock-variant-id>
+        </div>
+        <div class="admin-field"><label for="stock-quantity" data-stock-qty-label>Jumlah diterima</label><input id="stock-quantity" name="quantity" type="number" min="1" step="1" required></div>
+        <div class="admin-field"><label for="stock-supplier">Supplier</label><input id="stock-supplier" name="supplier" type="text" placeholder="Nama supplier"></div>
+        <div class="admin-field" data-stock-cost-field><label for="stock-cost">Biaya satuan (IDR)</label><input id="stock-cost" name="unitCostIdr" type="number" min="0" step="1000" placeholder="0"></div>
+        <div class="admin-field admin-field--full" data-stock-expense-field">
+          <label class="admin-check"><input type="checkbox" name="recordExpense" value="1"><span>Catat pembelian sebagai pengeluaran di buku kas</span></label>
+          <p class="admin-form-hint">Nominal pengeluaran = jumlah diterima × biaya satuan.</p>
+        </div>
+        <div class="admin-field admin-field--full"><label for="stock-note">Catatan</label><textarea id="stock-note" name="note" rows="3" placeholder="Nomor faktur, kondisi, alasan penyesuaian…"></textarea></div>
+      </div>
+      <div class="admin-alert" data-stock-error hidden></div>
+    </div>
+    <div class="admin-dialog-actions">
+      <button class="admin-button" type="button" data-dialog-close>Batal</button>
+      <button class="admin-button admin-button--primary" type="submit" data-stock-submit>Simpan stok <span aria-hidden="true">↗</span></button>
+    </div>
+  </form>
+</dialog>
+<%- include('partials/foot') %>

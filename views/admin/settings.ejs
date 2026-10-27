@@ -1,0 +1,83 @@
+<%- include('partials/head') %>
+<div class="admin-shell">
+  <%- include('partials/sidebar') %>
+  <div class="admin-main">
+    <%- include('partials/topbar') %>
+    <main class="admin-content">
+      <div class="admin-settings-layout">
+        <div class="admin-settings-main">
+          <form class="admin-card admin-settings-form" data-settings-form novalidate>
+            <div class="admin-card-head">
+              <div><p class="admin-eyebrow">Identitas & konversi</p><h2>Pengaturan toko</h2><p>Perubahan berlaku langsung untuk toko dan checkout.</p></div>
+              <button class="admin-button admin-button--primary admin-button--small" type="submit" data-settings-submit>Simpan <span aria-hidden="true">↗</span></button>
+            </div>
+            <div class="admin-form-section">
+              <h3>Maison</h3>
+              <div class="admin-field-grid">
+                <div class="admin-field"><label for="setting-rate">Nilai tukar IDR per 1 USD</label><input id="setting-rate" name="exchange_rate" type="number" min="1000" max="100000" step="1" required><small data-rate-preview></small></div>
+                <div class="admin-field"><label for="setting-email">Email concierge</label><input id="setting-email" name="brand_email" type="email" required></div>
+                <div class="admin-field"><label for="setting-phone">Telepon concierge</label><input id="setting-phone" name="support_phone" type="tel"></div>
+                <div class="admin-field"><label for="setting-threshold">Ambang stok menipis global</label><input id="setting-threshold" name="low_stock_threshold" type="number" min="0" max="1000" step="1" required><small>Diterapkan ke semua varian.</small></div>
+                <div class="admin-field admin-field--full"><label for="setting-announcement-en">Pengumuman bar (English)</label><input id="setting-announcement-en" name="announcement_en" type="text" maxlength="250"></div>
+                <div class="admin-field admin-field--full"><label for="setting-announcement-id">Pengumuman bar (Indonesia)</label><input id="setting-announcement-id" name="announcement_id" type="text" maxlength="250"></div>
+              </div>
+            </div>
+            <div class="admin-form-section">
+              <h3>Promo demo</h3>
+              <div class="admin-field-grid">
+                <div class="admin-field"><label for="setting-promo-code">Kode promo</label><input id="setting-promo-code" name="promo_code" type="text" maxlength="30" placeholder="STARFALL10"><small>Kosongkan untuk menonaktifkan promo.</small></div>
+                <div class="admin-field"><label for="setting-promo-percent">Diskon (%)</label><input id="setting-promo-percent" name="promo_percent" type="number" min="0" max="100" step="1"><small>Dihitung server-side saat checkout.</small></div>
+              </div>
+            </div>
+            <div class="admin-alert" data-settings-error hidden></div>
+            <div class="admin-form-foot"><span>IDR · nilai tukar demo lokal</span><button class="admin-button admin-button--primary" type="submit">Simpan pengaturan <span aria-hidden="true">↗</span></button></div>
+          </form>
+
+          <form class="admin-card admin-settings-form" data-admin-password-form novalidate>
+            <div class="admin-card-head">
+              <div><p class="admin-eyebrow">Keamanan akun</p><h2>Ganti kata sandi</h2><p>Password di-hash dengan scrypt. Sesi diputar ulang setelah perubahan.</p></div>
+            </div>
+            <div class="admin-field-grid">
+              <div class="admin-field admin-field--full"><label for="admin-current-password">Kata sandi saat ini</label><input id="admin-current-password" name="currentPassword" type="password" autocomplete="current-password" required></div>
+              <div class="admin-field"><label for="admin-new-password">Kata sandi baru</label><input id="admin-new-password" name="newPassword" type="password" autocomplete="new-password" minlength="10" required></div>
+              <div class="admin-field"><label for="admin-confirm-password">Konfirmasi kata sandi baru</label><input id="admin-confirm-password" name="confirmPassword" type="password" autocomplete="new-password" minlength="10" required></div>
+            </div>
+            <div class="admin-alert" data-admin-password-feedback hidden></div>
+            <div class="admin-form-foot"><span>Minimal 10 karakter.</span><button class="admin-button" type="submit">Perbarui kata sandi</button></div>
+          </form>
+        </div>
+
+        <aside class="admin-settings-side">
+          <section class="admin-card">
+            <div class="admin-card-head"><div><p class="admin-eyebrow">Sistem</p><h2>Ringkasan data</h2></div></div>
+            <div class="admin-system-stats">
+              <div><span>Produk</span><strong data-setting-products>—</strong></div>
+              <div><span>Varian</span><strong data-setting-variants>—</strong></div>
+              <div><span>Pesanan</span><strong data-setting-orders>—</strong></div>
+              <div><span>Administrator</span><strong data-setting-admins>—</strong></div>
+            </div>
+            <div class="admin-admin-identity">
+              <span class="admin-avatar" data-admin-avatar>SE</span>
+              <div><strong data-admin-name>—</strong><small data-admin-email>—</small></div>
+            </div>
+          </section>
+
+          <section class="admin-card">
+            <div class="admin-card-head"><div><p class="admin-eyebrow">Cadangan</p><h2>Cadangan basis data</h2></div></div>
+            <p class="admin-side-intro">Unduh snapshot SQLite terbaru. File dihapus dari server setelah dikirim ke browser.</p>
+            <a class="admin-button admin-button--full" href="/api/admin/backup" data-backup-link>Unduh cadangan <span aria-hidden="true">↓</span></a>
+            <p class="admin-form-hint">Gunakan sebelum perubahan stok besar atau demo ulang.</p>
+          </section>
+
+          <section class="admin-card admin-card--note">
+            <span class="admin-note-mark" aria-hidden="true">✦</span>
+            <h3>Batas demo</h3>
+            <p>Checkout adalah demo lokal. Tidak ada pembayaran nyata, verifikasi email, reset kata sandi otomatis, pengiriman newsletter, atau sinkronisasi marketplace. Stok, pesanan, dan keuangan tetap tersimpan di SQLite.</p>
+            <a class="admin-text-link" href="/credits" target="_blank" rel="noopener">Kredit & lisensi ↗</a>
+          </section>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+<%- include('partials/foot') %>

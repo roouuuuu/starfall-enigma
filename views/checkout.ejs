@@ -1,0 +1,148 @@
+<%- include('partials/head') %>
+<header class="checkout-header">
+  <a class="brand" href="/" aria-label="Starfall Enigma">
+    <img src="/assets/img/logo-mark.svg" width="30" height="30" alt="">
+    <span class="brand-word">STARFALL ENIGMA</span>
+  </a>
+  <div class="checkout-header-meta">
+    <span class="checkout-secure"><span aria-hidden="true">✦</span> <%= t('checkout.paymentDemoTitle') %></span>
+    <a href="/shop"><%= t('common.continueShopping') %></a>
+  </div>
+</header>
+
+<main id="main-content" class="checkout-page">
+  <div class="checkout-title">
+    <p class="eyebrow"><%= t('checkout.title') %> / SE</p>
+    <h1><%= t('checkout.title') %></h1>
+    <p><%= lang === 'id' ? 'Lengkapi detail pengiriman. Ini adalah checkout demonstrasi — tidak ada pembayaran nyata yang diproses.' : 'Complete your delivery details. This is a demo checkout — no real payment is processed.' %></p>
+  </div>
+
+  <noscript>
+    <div class="form-alert"><%= lang === 'id' ? 'Checkout demo ini memerlukan JavaScript untuk membaca tas lokal Anda.' : 'This demo checkout requires JavaScript to read your local bag.' %></div>
+  </noscript>
+
+  <div class="checkout-layout">
+    <form class="checkout-form" data-checkout-form novalidate>
+      <section class="checkout-step">
+        <div class="checkout-step-head"><span>01</span><div><h2><%= t('checkout.contact') %></h2><p><%= t('checkout.emailNote') %></p></div></div>
+        <div class="form-grid">
+          <div class="form-field form-field--full">
+            <label for="checkout-email"><%= t('common.email') %></label>
+            <input id="checkout-email" type="email" name="email" autocomplete="email" required value="<%= user ? user.email : '' %>">
+          </div>
+          <div class="form-field">
+            <label for="checkout-first"><%= t('common.firstName') %></label>
+            <input id="checkout-first" type="text" name="firstName" autocomplete="given-name" required value="<%= defaultAddress ? defaultAddress.first_name : (user ? user.firstName : '') %>">
+          </div>
+          <div class="form-field">
+            <label for="checkout-last"><%= t('common.lastName') %></label>
+            <input id="checkout-last" type="text" name="lastName" autocomplete="family-name" value="<%= defaultAddress ? defaultAddress.last_name : (user ? user.lastName : '') %>">
+          </div>
+          <div class="form-field form-field--full">
+            <label for="checkout-phone"><%= t('common.phone') %></label>
+            <input id="checkout-phone" type="tel" name="phone" autocomplete="tel" required value="<%= defaultAddress ? defaultAddress.phone : (user ? user.phone : '') %>">
+          </div>
+        </div>
+      </section>
+
+      <section class="checkout-step">
+        <div class="checkout-step-head"><span>02</span><div><h2><%= t('checkout.shippingAddress') %></h2><p><%= lang === 'id' ? 'Alamat pengiriman untuk catatan demo ini.' : 'The delivery address for this demo record.' %></p></div></div>
+        <div class="form-grid">
+          <div class="form-field form-field--full">
+            <label for="checkout-address1"><%= t('common.address') %></label>
+            <input id="checkout-address1" type="text" name="address1" autocomplete="address-line1" required value="<%= defaultAddress ? defaultAddress.address1 : '' %>">
+          </div>
+          <div class="form-field form-field--full">
+            <label for="checkout-address2"><%= t('common.address2') %> <em><%= t('common.optional') %></em></label>
+            <input id="checkout-address2" type="text" name="address2" autocomplete="address-line2" value="<%= defaultAddress ? defaultAddress.address2 : '' %>">
+          </div>
+          <div class="form-field">
+            <label for="checkout-city"><%= t('common.city') %></label>
+            <input id="checkout-city" type="text" name="city" autocomplete="address-level2" required value="<%= defaultAddress ? defaultAddress.city : '' %>">
+          </div>
+          <div class="form-field">
+            <label for="checkout-region"><%= t('common.region') %></label>
+            <input id="checkout-region" type="text" name="region" autocomplete="address-level1" value="<%= defaultAddress ? defaultAddress.region : '' %>">
+          </div>
+          <div class="form-field">
+            <label for="checkout-postal"><%= t('common.postalCode') %></label>
+            <input id="checkout-postal" type="text" name="postalCode" autocomplete="postal-code" required value="<%= defaultAddress ? defaultAddress.postal_code : '' %>">
+          </div>
+          <div class="form-field">
+            <label for="checkout-country"><%= t('common.country') %></label>
+            <select id="checkout-country" name="country" autocomplete="country-name" required>
+              <% countries.forEach((country) => { %>
+                <option value="<%= country %>" <%= defaultAddress && defaultAddress.country === country ? 'selected' : (!defaultAddress && country === 'Indonesia' ? 'selected' : '') %>><%= country %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="form-field form-field--full">
+            <label for="checkout-note"><%= t('checkout.noteLabel') %></label>
+            <textarea id="checkout-note" name="note" rows="3" maxlength="500"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="checkout-step">
+        <div class="checkout-step-head"><span>03</span><div><h2><%= t('checkout.payment') %></h2><p><%= lang === 'id' ? 'Tidak ada data kartu yang diperlukan.' : 'No card details are required.' %></p></div></div>
+        <div class="demo-payment">
+          <span class="demo-payment-mark" aria-hidden="true">SE</span>
+          <div>
+            <h3><%= t('checkout.paymentDemoTitle') %></h3>
+            <p><%= t('checkout.paymentDemoText') %></p>
+          </div>
+          <span class="demo-pill"><%= lang === 'id' ? 'Demo' : 'Demo' %></span>
+        </div>
+        <label class="check-line check-line--terms">
+          <input type="checkbox" name="terms" required>
+          <span><%= lang === 'id' ? 'Saya menyetujui' : 'I agree to the' %> <a href="/legal#terms" target="_blank" rel="noopener"><%= t('footer.terms') %></a> <%= lang === 'id' ? 'dan' : 'and' %> <a href="/legal#privacy" target="_blank" rel="noopener"><%= t('footer.privacy') %></a>.</span>
+        </label>
+      </section>
+
+      <div class="form-alert" data-checkout-error hidden></div>
+      <button class="button button--solid button--full checkout-submit" type="submit" data-checkout-submit>
+        <span data-checkout-submit-label><%= t('checkout.placeOrder') %></span><span aria-hidden="true">↗</span>
+      </button>
+      <p class="checkout-footnote"><%= lang === 'id' ? 'Dengan membuat pesanan demo, stok lokal dan catatan keuangan akan diperbarui. Tidak ada pengiriman atau pembayaran nyata.' : 'By placing a demo order, local stock and finance records will be updated. No real shipment or payment occurs.' %></p>
+    </form>
+
+    <aside class="checkout-summary" aria-labelledby="checkout-summary-title">
+      <div class="checkout-summary-head">
+        <h2 id="checkout-summary-title"><%= t('checkout.orderSummary') %></h2>
+        <span data-checkout-currency><%= currency %></span>
+      </div>
+      <div class="checkout-summary-items" data-checkout-items>
+        <p class="summary-loading"><%= t('common.loading') %>…</p>
+      </div>
+      <form class="promo-form" data-promo-form novalidate>
+        <label for="promo-code"><%= t('checkout.promo') %></label>
+        <div>
+          <input id="promo-code" type="text" name="promoCode" autocomplete="off" placeholder="<%= t('checkout.promoCode') %>">
+          <button type="submit"><%= t('checkout.promoApply') %></button>
+        </div>
+        <p class="promo-message" data-promo-message role="status"></p>
+        <% if (promoCode) { %><p class="promo-hint"><%= lang === 'id' ? `Kode demo: ${promoCode}` : `Demo code: ${promoCode}` %></p><% } %>
+      </form>
+      <div class="checkout-totals">
+        <div><span><%= t('common.subtotal') %></span><span data-summary-subtotal>—</span></div>
+        <div data-summary-discount-row hidden><span><%= t('checkout.discount') %></span><span data-summary-discount>—</span></div>
+        <div><span><%= t('common.shipping') %></span><span><%= t('common.included') %></span></div>
+        <div class="checkout-total"><span><%= t('common.total') %></span><span data-summary-total>—</span></div>
+      </div>
+      <p class="checkout-currency-note"><%= t('cart.currencyNote', { currency }) %></p>
+      <div class="checkout-promise">
+        <span aria-hidden="true">✦</span>
+        <p><%= t('checkout.deliveryStandard') %><small><%= t('checkout.deliveryStandardNote') %></small></p>
+      </div>
+    </aside>
+  </div>
+</main>
+<footer class="checkout-footer">
+  <p><%= t('footer.disclaimer') %></p>
+  <div><a href="/legal"><%= t('footer.legal') %></a><a href="/client-care"><%= t('nav.clientCare') %></a><a href="/"><%= t('common.home') %></a></div>
+</footer>
+<div class="toast-stack" data-toast-stack aria-live="polite"></div>
+<%- include('partials/scripts') %>
+<script src="/js/checkout.js" defer></script>
+</body>
+</html>

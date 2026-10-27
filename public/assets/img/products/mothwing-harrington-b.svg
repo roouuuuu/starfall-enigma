@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1250" width="1000" height="1250" role="img" aria-labelledby="title desc">
+<title id="title">Mothwing Harrington - detail study</title>
+<desc id="desc">Original Starfall Enigma vector packshot for Mothwing Harrington, Outerwear, detail view.</desc>
+<defs>
+  <linearGradient id="bgBone" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0ebe1"/><stop offset=".55" stop-color="#e8e1d5"/><stop offset="1" stop-color="#c8bda9"/></linearGradient>
+  <linearGradient id="bgDark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#171719"/><stop offset=".6" stop-color="#0d0e10"/><stop offset="1" stop-color="#261a1c"/></linearGradient>
+  <linearGradient id="cloth" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a3531"/><stop offset="1" stop-color="#5a514a"/></linearGradient>
+  <filter id="shadow" x="-30%" y="-20%" width="160%" height="160%"><feDropShadow dx="0" dy="24" stdDeviation="24" flood-color="#000" flood-opacity=".55"/></filter>
+  <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="119" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 .06"/></feComponentTransfer></filter>
+</defs>
+<rect width="1000" height="1250" fill="url(#bgDark)"/>
+    <g opacity=".22" fill="none" stroke="#b7b3aa">
+      <circle cx="500" cy="620" r="329"/>
+      <circle cx="500" cy="620" r="469" stroke-dasharray="2 14"/>
+      <path d="M100 120 L900 1130 M900 120 L100 1130" stroke-width=".6"/>
+    </g>
+    <g fill="#b7b3aa" opacity=".55">
+      <circle cx="160" cy="190" r="2"/><circle cx="820" cy="260" r="1.5"/><circle cx="770" cy="980" r="2.5"/><circle cx="210" cy="1040" r="1.5"/>
+    </g>
+<g filter="url(#shadow)"><path d="M370 300 L330 480 L290 452 L296 362 Z M630 300 L670 480 L710 452 L704 362 Z" fill="#3a3531" stroke="#5a514a" stroke-width="2"/><path d="M370 300 L435 268 Q500 312 565 268 L630 300 L704 362 L670 480 L620 452 L642 760 L358 760 L380 452 L330 480 L296 362 Z" fill="#3a3531" stroke="#5a514a" stroke-width="2"/><path d="M435 268 L500 405 L470 472 L420 342 Z M565 268 L500 405 L530 472 L580 342 Z" fill="#5a514a" opacity=".55"/><path d="M402 705 L472 705 M528 705 L598 705" stroke="#d1c3ad" stroke-width="1.2" opacity=".7"/><path d="M430 300 L430 740 M570 300 L570 740" stroke="#b0a28e" stroke-width="1" opacity=".25"/></g><g fill="none" stroke="#d1c3ad" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M500 480 C482 457.5 477.5 484.5 497.75 490.125 M500 480 C518 457.5 522.5 484.5 502.25 490.125 M500 471 L500 495.75"/></g>
+<g fill="none" stroke="#c9a987" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path d="M810 1010 C775.6 967 767 1018.6 805.7 1029.35 M810 1010 C844.4 967 853 1018.6 814.3 1029.35 M810 992.8 L810 1040.1"/></g>
+<g fill="#b7b3aa" font-family="Georgia, 'Times New Roman', serif" text-anchor="middle">
+  <text x="500" y="1150" font-size="18" letter-spacing="7">STARFALL ENIGMA</text>
+  <text x="500" y="1182" font-size="13" letter-spacing="3" opacity=".72">SE-OW-005 / OUTERWEAR</text>
+  <text x="500" y="1214" font-size="11" letter-spacing="2" opacity=".55">MOTHWING HARRINGTON</text>
+</g>
+<rect width="1000" height="1250" filter="url(#grain)" opacity=".55"/>
+</svg>

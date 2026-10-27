@@ -1,0 +1,49 @@
+<%- include('partials/auth-head') %>
+<main class="admin-auth">
+  <section class="admin-auth-visual">
+    <img src="/assets/img/editorial/cathedral-detail.jpg" alt="Detail jendela katedral">
+    <div class="admin-auth-veil"></div>
+    <div class="admin-auth-brand">
+      <img src="/assets/img/logo-mark.svg" width="42" height="42" alt="">
+      <span>STARFALL<br>ENIGMA</span>
+    </div>
+    <div class="admin-auth-quote">
+      <span aria-hidden="true">✦</span>
+      <p>“Arsip ini sunyi, tetapi setiap gerakan meninggalkan jejak.”</p>
+      <small>Kendali atelier / Jakarta</small>
+    </div>
+  </section>
+  <section class="admin-auth-form-side">
+    <div class="admin-auth-form-top">
+      <a href="/">← Kembali ke toko</a>
+      <span>Admin / ID</span>
+    </div>
+    <div class="admin-auth-form-wrap">
+      <p class="admin-eyebrow">Starfall Enigma / Terbatas</p>
+      <h1>Masuk dasbor</h1>
+      <p class="admin-auth-intro">Akses pemilik untuk pesanan, stok, keuangan, dan konfigurasi maison. Sesi dilindungi CSRF dan cookie aman.</p>
+      <form data-admin-auth="login" novalidate>
+        <div class="admin-field">
+          <label for="admin-email">Email administrator</label>
+          <input id="admin-email" name="email" type="email" autocomplete="username" required autofocus>
+        </div>
+        <div class="admin-field">
+          <label for="admin-password">Kata sandi</label>
+          <div class="admin-password-field">
+            <input id="admin-password" name="password" type="password" autocomplete="current-password" required>
+            <button type="button" data-admin-password-toggle aria-label="Tampilkan kata sandi">◐</button>
+          </div>
+        </div>
+        <div class="admin-alert" data-admin-auth-error hidden></div>
+        <button class="admin-button admin-button--primary admin-button--full" type="submit" data-admin-auth-submit>Masuk <span aria-hidden="true">↗</span></button>
+      </form>
+      <div class="admin-auth-foot">
+        <p>Belum ada administrator? <a href="/setup">Jalankan setup pertama</a></p>
+        <p class="admin-auth-disclaimer">Demo lokal. Tidak ada autentikasi pihak ketiga atau pengiriman email.</p>
+      </div>
+    </div>
+  </section>
+</main>
+<script src="/js/admin-auth.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<header class="admin-topbar">
+  <button class="admin-menu-toggle" type="button" data-admin-menu aria-label="Buka menu" aria-expanded="false" aria-controls="admin-sidebar"><span></span><span></span></button>
+  <div class="admin-topbar-title">
+    <% const sectionLabels = { dashboard: 'Ringkasan', orders: 'Pesanan', inventory: 'Stok & Inventaris', finance: 'Keuangan', customers: 'Pelanggan', social: 'Sosial & Klik', settings: 'Pengaturan' }; %>
+    <p>Panel Kendali / <span><%= sectionLabels[adminSection] || adminTitle || 'Ringkasan' %></span></p>
+    <h1><%= adminTitle %></h1>
+    <span><%= adminSubtitle %></span>
+  </div>
+  <div class="admin-topbar-actions">
+    <div class="admin-clock"><span data-admin-clock>--:--</span><small>WIB</small></div>
+    <a class="admin-store-link" href="/" target="_blank" rel="noopener">Toko <span aria-hidden="true">↗</span></a>
+    <div class="admin-user-chip">
+      <span class="admin-avatar"><%= (adminUser.first_name || 'S').slice(0, 1) %><%= (adminUser.last_name || 'E').slice(0, 1) %></span>
+      <span><strong><%= adminUser.first_name %> <%= adminUser.last_name %></strong><small><%= adminUser.email %></small></span>
+    </div>
+  </div>
+</header>

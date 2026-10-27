@@ -1,0 +1,125 @@
+<%- include('partials/head') %>
+<div class="admin-shell">
+  <%- include('partials/sidebar') %>
+  <div class="admin-main">
+    <%- include('partials/topbar') %>
+    <main class="admin-content">
+      <section class="admin-toolbar admin-toolbar--actions">
+        <form class="admin-filter-form" data-orders-filter>
+          <label class="admin-search"><span class="sr-only">Cari pesanan</span><input type="search" name="search" placeholder="Cari nomor, nama, email…"></label>
+          <select name="status" aria-label="Status">
+            <option value="">Semua status</option>
+            <option value="paid">Dibayar</option>
+            <option value="processing">Diproses</option>
+            <option value="shipped">Dikirim</option>
+            <option value="completed">Selesai</option>
+            <option value="cancelled">Dibatalkan</option>
+          </select>
+          <select name="channel" aria-label="Kanal">
+            <option value="">Semua kanal</option>
+            <option value="website">Website</option>
+            <option value="instagram">Instagram</option>
+            <option value="tiktok">TikTok</option>
+            <option value="shopee">Shopee</option>
+            <option value="offline">Offline</option>
+          </select>
+          <label class="admin-date-inline">Dari <input type="date" name="from"></label>
+          <label class="admin-date-inline">Sampai <input type="date" name="to"></label>
+          <button class="admin-button admin-button--small" type="submit">Filter</button>
+          <a class="admin-text-link" href="/admin/orders">Reset</a>
+        </form>
+        <div class="admin-toolbar-buttons">
+          <button class="admin-button admin-button--primary" type="button" data-manual-sale-open>+ Penjualan manual</button>
+        </div>
+      </section>
+
+      <section class="admin-card">
+        <div class="admin-card-head admin-card-head--table">
+          <div><p class="admin-eyebrow">Arsip pesanan</p><h2><span data-orders-title>Semua pesanan</span> <small data-orders-count></small></h2></div>
+          <div class="admin-table-head-meta"><span data-orders-page-label></span></div>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Nomor</th><th>Tanggal</th><th>Pelanggan</th><th>Kanal</th><th>Status</th><th>Baris</th><th class="is-right">Total</th><th></th></tr></thead>
+            <tbody data-orders-tbody><tr><td colspan="8" class="admin-empty-cell">Memuat pesanan…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="admin-pagination" data-orders-pagination></div>
+      </section>
+
+      <div class="admin-note-strip">
+        <span aria-hidden="true">✦</span>
+        <p>Pesanan berstatus dibayar mengurangi stok dan menambah pemasukan. Pembatalan mengembalikan stok dan membalik pemasukan. Penjualan manual juga memakai aturan stok yang sama.</p>
+      </div>
+    </main>
+  </div>
+</div>
+
+<dialog class="admin-dialog admin-dialog--wide" id="manual-sale-dialog" data-manual-sale-dialog>
+  <form class="admin-dialog-inner" data-manual-sale-form novalidate>
+    <div class="admin-dialog-head">
+      <div><p class="admin-eyebrow">Input penjualan</p><h2>Penjualan manual</h2><p>Untuk Instagram, TikTok, Shopee, atau transaksi offline. Stok langsung dikurangi.</p></div>
+      <button class="admin-icon-button" type="button" data-dialog-close aria-label="Tutup">×</button>
+    </div>
+    <div class="admin-dialog-body">
+      <div class="admin-form-section">
+        <h3>Informasi pelanggan</h3>
+        <div class="admin-field-grid">
+          <div class="admin-field"><label for="manual-name">Nama pelanggan</label><input id="manual-name" name="customerName" type="text" required></div>
+          <div class="admin-field"><label for="manual-email">Email <small>opsional</small></label><input id="manual-email" name="email" type="email"></div>
+          <div class="admin-field"><label for="manual-channel">Kanal penjualan</label><select id="manual-channel" name="channel" required><option value="instagram">Instagram</option><option value="tiktok">TikTok</option><option value="shopee">Shopee</option><option value="offline">Offline</option></select></div>
+          <div class="admin-field"><label for="manual-reference">Referensi <small>opsional</small></label><input id="manual-reference" name="reference" type="text" placeholder="No. invoice / pesan"></div>
+          <div class="admin-field admin-field--full"><label for="manual-note">Catatan</label><textarea id="manual-note" name="note" rows="2"></textarea></div>
+        </div>
+      </div>
+      <div class="admin-form-section">
+        <div class="admin-section-line"><h3>Karya</h3><button class="admin-text-button" type="button" data-manual-add-line>+ Tambah baris</button></div>
+        <div class="manual-lines" data-manual-lines></div>
+        <p class="admin-form-hint">Harga diisi dalam IDR. Stok dicek ulang oleh server saat disimpan untuk mencegah oversell.</p>
+      </div>
+      <div class="manual-total"><span>Total penjualan</span><strong data-manual-total>Rp 0</strong></div>
+      <div class="admin-alert" data-manual-error hidden></div>
+    </div>
+    <div class="admin-dialog-actions">
+      <button class="admin-button" type="button" data-dialog-close>Batal</button>
+      <button class="admin-button admin-button--primary" type="submit" data-manual-submit>Simpan penjualan <span aria-hidden="true">↗</span></button>
+    </div>
+  </form>
+</dialog>
+
+<template id="manual-line-template">
+  <div class="manual-line" data-manual-line>
+    <div class="manual-line-main">
+      <label>Produk<select data-manual-product></select></label>
+      <label>Varian<select data-manual-variant></select></label>
+      <label>Jumlah<input data-manual-qty type="number" min="1" value="1" inputmode="numeric"></label>
+      <label>Harga satuan (IDR)<input data-manual-price type="number" min="0" step="1000" inputmode="numeric"></label>
+      <strong data-manual-line-total>Rp 0</strong>
+      <button class="admin-remove-line" type="button" data-manual-remove aria-label="Hapus baris">×</button>
+    </div>
+    <p class="manual-line-stock" data-manual-stock></p>
+  </div>
+</template>
+
+<dialog class="admin-dialog admin-dialog--wide" id="order-detail-dialog" data-order-dialog>
+  <div class="admin-dialog-inner">
+    <div class="admin-dialog-head">
+      <div><p class="admin-eyebrow">Detail pesanan</p><h2 data-order-dialog-title>Pesanan</h2><p data-order-dialog-subtitle></p></div>
+      <button class="admin-icon-button" type="button" data-dialog-close aria-label="Tutup">×</button>
+    </div>
+    <div class="admin-dialog-body" data-order-detail>
+      <p class="admin-empty-text">Memuat detail…</p>
+    </div>
+    <div class="admin-dialog-actions admin-order-actions">
+      <div class="admin-order-status-controls">
+        <label>Status<select data-order-status-select><option value="paid">Dibayar</option><option value="processing">Diproses</option><option value="shipped">Dikirim</option><option value="completed">Selesai</option></select></label>
+        <button class="admin-button admin-button--small" type="button" data-order-status-save>Simpan status</button>
+      </div>
+      <div class="admin-order-cancel-controls">
+        <input type="text" data-order-cancel-reason placeholder="Alasan pembatalan">
+        <button class="admin-button admin-button--danger admin-button--small" type="button" data-order-cancel>Batalkan pesanan</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+<%- include('partials/foot') %>

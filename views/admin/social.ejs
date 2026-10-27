@@ -1,0 +1,52 @@
+<%- include('partials/head') %>
+<div class="admin-shell">
+  <%- include('partials/sidebar') %>
+  <div class="admin-main">
+    <%- include('partials/topbar') %>
+    <main class="admin-content">
+      <section class="admin-toolbar">
+        <div class="admin-toolbar-note"><span class="admin-live-dot"></span><span>Klik keluar dicatat nyata saat pengunjung menekan tautan. Tidak ada bot, pembelian palsu, atau sinkronisasi marketplace.</span></div>
+        <button class="admin-button admin-button--primary admin-button--small" type="submit" form="social-form">Simpan tautan <span aria-hidden="true">↗</span></button>
+      </section>
+
+      <form id="social-form" data-social-form>
+        <section class="admin-social-grid">
+          <article class="admin-card admin-social-card">
+            <div class="admin-social-card-head"><div class="admin-social-icon">IG</div><div><h2>Instagram</h2><p>Tautan bio & feed</p></div><label class="admin-switch"><input type="checkbox" data-social-active="instagram"><span></span></label></div>
+            <div class="admin-field"><label for="social-instagram">URL profil</label><input id="social-instagram" type="url" data-social-url="instagram" placeholder="https://www.instagram.com/…"></div>
+            <div class="admin-social-card-foot"><span><strong data-social-clicks="instagram">0</strong> klik / 30 hari</span><a href="#" target="_blank" rel="noopener" data-social-test="instagram" hidden>Buka ↗</a></div>
+          </article>
+          <article class="admin-card admin-social-card">
+            <div class="admin-social-card-head"><div class="admin-social-icon">TT</div><div><h2>TikTok</h2><p>Video & profil</p></div><label class="admin-switch"><input type="checkbox" data-social-active="tiktok"><span></span></label></div>
+            <div class="admin-field"><label for="social-tiktok">URL profil</label><input id="social-tiktok" type="url" data-social-url="tiktok" placeholder="https://www.tiktok.com/@…"></div>
+            <div class="admin-social-card-foot"><span><strong data-social-clicks="tiktok">0</strong> klik / 30 hari</span><a href="#" target="_blank" rel="noopener" data-social-test="tiktok" hidden>Buka ↗</a></div>
+          </article>
+          <article class="admin-card admin-social-card">
+            <div class="admin-social-card-head"><div class="admin-social-icon">SP</div><div><h2>Shopee</h2><p>Toko marketplace</p></div><label class="admin-switch"><input type="checkbox" data-social-active="shopee"><span></span></label></div>
+            <div class="admin-field"><label for="social-shopee">URL toko</label><input id="social-shopee" type="url" data-social-url="shopee" placeholder="https://shopee.co.id/…"></div>
+            <div class="admin-social-card-foot"><span><strong data-social-clicks="shopee">0</strong> klik / 30 hari</span><a href="#" target="_blank" rel="noopener" data-social-test="shopee" hidden>Buka ↗</a></div>
+          </article>
+        </section>
+        <div class="admin-alert" data-social-error hidden></div>
+      </form>
+
+      <div class="admin-dashboard-grid">
+        <section class="admin-card admin-chart-card">
+          <div class="admin-card-head"><div><p class="admin-eyebrow">14 hari</p><h2>Klik tautan sosial</h2></div><div class="admin-chart-legend"><span><i class="legend-income"></i>Instagram</span><span><i class="legend-expense"></i>TikTok</span><span><i class="legend-net"></i>Shopee</span></div></div>
+          <div class="admin-chart" data-social-chart><p class="admin-empty-text">Memuat grafik…</p></div>
+          <div class="admin-social-total"><span>Total klik sepanjang waktu</span><strong data-social-total>—</strong></div>
+        </section>
+        <section class="admin-card">
+          <div class="admin-card-head"><div><p class="admin-eyebrow">Jejak</p><h2>Klik terakhir</h2></div></div>
+          <div class="admin-recent-clicks" data-social-recent><p class="admin-empty-text">Memuat klik…</p></div>
+        </section>
+      </div>
+
+      <section class="admin-card admin-tracking-note">
+        <span class="admin-note-mark" aria-hidden="true">✦</span>
+        <div><h3>Bagaimana pelacakan bekerja</h3><p>Toko mengarahkan tautan sosial melalui rute lokal <code>/go/platform</code>. Rute mencatat platform, waktu, halaman asal, dan referrer, lalu mengalihkan pengunjung ke URL yang Anda atur. Admin penjualan manual terpisah dan tidak membuat klik atau pesanan palsu.</p></div>
+      </section>
+    </main>
+  </div>
+</div>
+<%- include('partials/foot') %>

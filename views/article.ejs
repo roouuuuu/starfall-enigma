@@ -1,0 +1,76 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main-content" class="article-page">
+  <nav class="product-breadcrumbs" aria-label="Breadcrumb">
+    <a href="/"><%= t('common.home') %></a><span aria-hidden="true">/</span>
+    <a href="/journal"><%= t('nav.journal') %></a><span aria-hidden="true">/</span>
+    <span><%= article.category %></span>
+  </nav>
+  <article>
+    <header class="article-hero">
+      <div class="article-hero-copy">
+        <p class="eyebrow"><%= article.category %> · <%= formatDate(article.date) %></p>
+        <h1><%= article.title %></h1>
+        <p class="article-deck"><%= article.excerpt %></p>
+        <div class="article-meta">
+          <span><%= lang === 'id' ? 'Oleh Atelier' : 'By the Atelier' %></span>
+          <span><%= t('journal.minRead', { count: article.readMinutes }) %></span>
+          <span>Starfall Enigma</span>
+        </div>
+      </div>
+      <figure class="article-hero-image">
+        <img src="<%= article.image %>" alt="<%= article.title %>" fetchpriority="high">
+        <figcaption><%= lang === 'id' ? 'Studi editorial / Pexels' : 'Editorial study / Pexels' %></figcaption>
+      </figure>
+    </header>
+
+    <div class="article-body">
+      <aside class="article-aside">
+        <p class="eyebrow"><%= t('nav.journal') %></p>
+        <p><%= lang === 'id' ? 'Catatan dari arsip Starfall Enigma tentang material, keheningan, dan pakaian yang menyimpan misterinya sendiri.' : 'Notes from the Starfall Enigma archive on material, silence, and clothes that keep their own mystery.' %></p>
+        <a class="text-link" href="/journal"><%= lang === 'id' ? 'Semua catatan' : 'All notes' %> <span aria-hidden="true">↗</span></a>
+      </aside>
+      <div class="article-prose">
+        <% article.body.forEach((paragraph, index) => { %>
+          <p class="<%= index === 0 ? 'article-first' : '' %>"><%= paragraph %></p>
+        <% }) %>
+        <div class="article-end"><span aria-hidden="true">✦</span><span>SE</span></div>
+      </div>
+    </div>
+
+    <div class="article-shop-cta">
+      <div>
+        <p class="eyebrow"><%= lang === 'id' ? 'Dari halaman ke lemari' : 'From page to wardrobe' %></p>
+        <h2><%= lang === 'id' ? 'Karya yang menyertai catatan ini.' : 'Pieces that keep this note company.' %></h2>
+      </div>
+      <a class="button button--solid" href="/shop"><%= t('home.exploreCollection') %> <span aria-hidden="true">↗</span></a>
+    </div>
+  </article>
+
+  <% if (related.length) { %>
+  <section class="section article-related">
+    <div class="section-head">
+      <div><p class="eyebrow"><%= lang === 'id' ? 'Bacaan berikutnya' : 'Continue reading' %></p><h2><%= lang === 'id' ? 'Catatan lain dari arsip.' : 'More notes from the archive.' %></h2></div>
+    </div>
+    <div class="journal-list">
+      <% related.forEach((item, index) => { %>
+        <article class="journal-list-card">
+          <a class="journal-list-image" href="/journal/<%= item.slug %>"><img src="<%= item.image %>" alt="<%= item.title %>" loading="lazy"></a>
+          <div class="journal-list-copy">
+            <p class="eyebrow"><%= item.category %> · <%= formatDate(item.date) %></p>
+            <h2><a href="/journal/<%= item.slug %>"><%= item.title %></a></h2>
+            <p><%= item.excerpt %></p>
+            <a class="text-link" href="/journal/<%= item.slug %>"><%= t('journal.read') %> <span aria-hidden="true">↗</span></a>
+          </div>
+          <span class="journal-list-number" aria-hidden="true">0<%= index + 1 %></span>
+        </article>
+      <% }) %>
+    </div>
+  </section>
+  <% } %>
+</main>
+<%- include('partials/footer') %>
+<%- include('partials/overlays') %>
+<%- include('partials/scripts') %>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<%- include('partials/head') %>
+<div class="admin-shell">
+  <%- include('partials/sidebar') %>
+  <div class="admin-main">
+    <%- include('partials/topbar') %>
+    <main class="admin-content">
+      <section class="admin-kpi-grid admin-kpi-grid--three">
+        <article class="admin-kpi admin-kpi--dark"><div class="admin-kpi-head"><span>Total pelanggan</span><span class="admin-kpi-icon">◎</span></div><p class="admin-kpi-value" data-customers-total>—</p><p class="admin-kpi-note">Akun terdaftar</p></article>
+        <article class="admin-kpi"><div class="admin-kpi-head"><span>Pelanggan berulang</span><span class="admin-kpi-icon">↺</span></div><p class="admin-kpi-value" data-customers-repeat>—</p><p class="admin-kpi-note">Lebih dari satu pesanan</p></article>
+        <article class="admin-kpi admin-kpi--wine"><div class="admin-kpi-head"><span>Surat terdaftar</span><span class="admin-kpi-icon">✦</span></div><p class="admin-kpi-value" data-customers-subscribers>—</p><p class="admin-kpi-note">Newsletter lokal</p></article>
+      </section>
+
+      <div class="admin-customers-layout">
+        <section class="admin-card">
+          <div class="admin-card-head admin-card-head--table">
+            <div><p class="admin-eyebrow">Akun</p><h2>Pelanggan <small data-customers-count></small></h2></div>
+            <span class="admin-table-head-meta" data-customers-page-label></span>
+          </div>
+          <form class="admin-inline-filter" data-customers-filter>
+            <label class="admin-search"><input type="search" name="search" placeholder="Cari nama, email, telepon…"></label>
+            <button class="admin-button admin-button--small" type="submit">Cari</button>
+            <a class="admin-text-link" href="/admin/customers">Reset</a>
+          </form>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead><tr><th>Pelanggan</th><th>Kontak</th><th>Terdaftar</th><th>Pesanan</th><th class="is-right">Total belanja</th><th>Terakhir</th><th></th></tr></thead>
+              <tbody data-customers-tbody><tr><td colspan="7" class="admin-empty-cell">Memuat pelanggan…</td></tr></tbody>
+            </table>
+          </div>
+          <div class="admin-pagination" data-customers-pagination></div>
+        </section>
+
+        <aside class="admin-card">
+          <div class="admin-card-head"><div><p class="admin-eyebrow">Korespondensi</p><h2>Newsletter</h2></div></div>
+          <p class="admin-side-intro">Daftar lokal untuk demo. Tidak ada email yang benar-benar dikirim.</p>
+          <div class="admin-subscribers" data-subscribers><p class="admin-empty-text">Memuat…</p></div>
+          <div class="admin-card-foot"><span>Total terdaftar</span><strong data-subscribers-total>—</strong></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+<%- include('partials/foot') %>

@@ -1,0 +1,151 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main-content" class="shop-page" data-shop-root data-category="<%= categoryId %>" data-currency="<%= currency %>">
+  <header class="shop-hero">
+    <div class="shop-hero-copy">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/"><%= t('common.home') %></a><span aria-hidden="true">/</span>
+        <a href="/shop"><%= t('nav.shopAll') %></a>
+        <% if (meta.id) { %><span aria-hidden="true">/</span><span><%= meta.title %></span><% } %>
+      </nav>
+      <p class="eyebrow"><%= lang === 'id' ? 'Arsip / Koleksi' : 'Archive / Collection' %></p>
+      <h1><%= meta.title %></h1>
+      <p><%= meta.intro %></p>
+      <div class="shop-hero-meta">
+        <span><%= t('shop.categoryCount', { count: result.total }) %></span>
+        <span>USD / IDR</span>
+        <span><%= lang === 'id' ? 'Dikirim dari Jakarta' : 'Sent from Jakarta' %></span>
+      </div>
+    </div>
+    <div class="shop-hero-image">
+      <img src="<%= meta.image %>" alt="<%= meta.title %>" fetchpriority="high">
+      <span class="shop-hero-index">SE / 01</span>
+    </div>
+  </header>
+
+  <div class="shop-shell">
+    <button class="filter-mobile-toggle" type="button" data-filter-toggle aria-expanded="false" aria-controls="shop-filters">
+      <span><%= t('shop.filters') %></span><span aria-hidden="true">+</span>
+    </button>
+    <aside class="shop-filters" id="shop-filters" data-shop-filters-panel aria-label="<%= t('shop.filters') %>">
+      <div class="filter-head">
+        <p class="eyebrow"><%= t('shop.filters') %></p>
+        <button class="text-button" type="button" data-filter-close aria-label="<%= t('common.close') %>">×</button>
+      </div>
+      <form class="filter-form" data-shop-filters novalidate>
+        <div class="filter-search">
+          <label for="shop-search"><%= t('common.search') %></label>
+          <input id="shop-search" type="search" name="search" value="<%= filterState.search %>" placeholder="<%= t('shop.searchPlaceholder') %>">
+        </div>
+        <fieldset class="filter-group">
+          <legend><%= t('shop.filterCategory') %></legend>
+          <div class="filter-options filter-options--scroll">
+            <% facets.categories.forEach((category) => { %>
+              <label class="check-line">
+                <input type="checkbox" name="category" value="<%= category.id %>" <%= selectedCategories.includes(category.id) ? 'checked' : '' %>>
+                <span><%= category.label %></span><small><%= category.count %></small>
+              </label>
+            <% }) %>
+          </div>
+        </fieldset>
+        <fieldset class="filter-group">
+          <legend><%= t('shop.filterCollection') %></legend>
+          <div class="filter-options">
+            <% facets.collections.forEach((collection) => { %>
+              <label class="check-line">
+                <input type="checkbox" name="collection" value="<%= collection.id %>" <%= filterState.collection.includes(collection.id) ? 'checked' : '' %>>
+                <span><%= collection.label %></span><small><%= collection.count %></small>
+              </label>
+            <% }) %>
+          </div>
+        </fieldset>
+        <fieldset class="filter-group">
+          <legend><%= t('shop.filterMaterial') %></legend>
+          <select name="material" aria-label="<%= t('shop.filterMaterial') %>">
+            <option value=""><%= lang === 'id' ? 'Semua material' : 'All materials' %></option>
+            <% facets.materials.forEach((material) => { %>
+              <option value="<%= material.value %>" <%= filterState.material === material.value ? 'selected' : '' %>><%= material.label %> (<%= material.count %>)</option>
+            <% }) %>
+          </select>
+        </fieldset>
+        <fieldset class="filter-group">
+          <legend><%= t('shop.filterSize') %></legend>
+          <select name="size" aria-label="<%= t('shop.filterSize') %>">
+            <option value=""><%= lang === 'id' ? 'Semua ukuran' : 'All sizes' %></option>
+            <% sizeGroups.forEach((group) => { %>
+              <optgroup label="<%= group.label %>">
+                <% group.values.forEach((size) => { %>
+                  <option value="<%= size %>" <%= filterState.size === size ? 'selected' : '' %>><%= size %></option>
+                <% }) %>
+              </optgroup>
+            <% }) %>
+          </select>
+        </fieldset>
+        <fieldset class="filter-group">
+          <legend><%= t('shop.filterAvailability') %></legend>
+          <select name="availability" aria-label="<%= t('shop.filterAvailability') %>">
+            <option value=""><%= lang === 'id' ? 'Semua' : 'All' %></option>
+            <option value="in" <%= filterState.availability === 'in' ? 'selected' : '' %>><%= t('shop.inStockOnly') %></option>
+            <option value="low" <%= filterState.availability === 'low' ? 'selected' : '' %>><%= lang === 'id' ? 'Hampir habis' : 'Low stock' %></option>
+            <option value="out" <%= filterState.availability === 'out' ? 'selected' : '' %>><%= lang === 'id' ? 'Habis' : 'Sold out' %></option>
+          </select>
+        </fieldset>
+        <fieldset class="filter-group">
+          <legend><%= t('shop.filterPrice') %> (<%= currency %>)</legend>
+          <div class="price-range">
+            <label><span><%= t('shop.filterPriceMin') %></span><input type="number" min="0" step="1" name="minPrice" value="<%= filterState.minPrice %>" placeholder="<%= currency === 'IDR' ? '0' : '0' %>"></label>
+            <span aria-hidden="true">—</span>
+            <label><span><%= t('shop.filterPriceMax') %></span><input type="number" min="0" step="1" name="maxPrice" value="<%= filterState.maxPrice %>" placeholder="<%= currency === 'IDR' ? '10000000' : '500' %>"></label>
+          </div>
+        </fieldset>
+        <div class="filter-actions">
+          <button class="button button--solid button--full" type="submit"><%= t('shop.applyFilters') %></button>
+          <a class="text-button" href="<%= meta.id ? `/shop/${meta.id}` : '/shop' %>"><%= t('shop.clearAll') %></a>
+        </div>
+      </form>
+    </aside>
+
+    <section class="shop-results" aria-live="polite">
+      <div class="shop-toolbar">
+        <div>
+          <p class="eyebrow" data-shop-result-label><%= t('shop.showing', { shown: result.items.length, total: result.total }) %></p>
+          <h2><%= filterState.search ? `${t('search.results')}: “${filterState.search}”` : meta.title %></h2>
+        </div>
+        <div class="shop-toolbar-actions">
+          <label class="sort-select"><span><%= t('shop.sort') %></span>
+            <select name="sort" data-shop-sort form="shop-sort-form">
+              <option value="featured" <%= filterState.sort === 'featured' ? 'selected' : '' %>><%= t('shop.sortFeatured') %></option>
+              <option value="newest" <%= filterState.sort === 'newest' ? 'selected' : '' %>><%= t('shop.sortNewest') %></option>
+              <option value="price_asc" <%= filterState.sort === 'price_asc' ? 'selected' : '' %>><%= t('shop.sortPriceAsc') %></option>
+              <option value="price_desc" <%= filterState.sort === 'price_desc' ? 'selected' : '' %>><%= t('shop.sortPriceDesc') %></option>
+              <option value="name" <%= filterState.sort === 'name' ? 'selected' : '' %>><%= t('shop.sortName') %></option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <form id="shop-sort-form" hidden></form>
+      <div class="active-filter-chips" data-active-filters></div>
+      <div class="product-grid product-grid--three shop-grid" data-shop-grid>
+        <% result.items.forEach((product) => { %>
+          <%- include('partials/product-card', { product }) %>
+        <% }) %>
+      </div>
+      <div class="shop-empty" data-shop-empty <%= result.items.length ? 'hidden' : '' %>>
+        <span aria-hidden="true">✦</span>
+        <h2><%= t('shop.noResults') %></h2>
+        <p><%= t('shop.noResultsText') %></p>
+        <a class="button button--outline" href="<%= meta.id ? `/shop/${meta.id}` : '/shop' %>"><%= t('shop.clearAll') %></a>
+      </div>
+      <div class="shop-load-more">
+        <button class="button button--outline" type="button" data-shop-load-more <%= result.hasMore ? '' : 'hidden' %>><%= t('shop.loadMore') %></button>
+        <p data-shop-end-note <%= result.hasMore ? 'hidden' : '' %>><%= lang === 'id' ? 'Anda telah mencapai akhir arsip.' : 'You have reached the end of the archive.' %></p>
+      </div>
+    </section>
+  </div>
+</main>
+<%- include('partials/footer') %>
+<%- include('partials/overlays') %>
+<%- include('partials/scripts') %>
+<script src="/js/shop.js" defer></script>
+</body>
+</html>
