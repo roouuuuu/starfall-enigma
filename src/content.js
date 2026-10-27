@@ -96,7 +96,7 @@ const CREDITS = {
       ['Cathedral window detail', 'https://www.pexels.com/photo/32160193/']
     ],
     technologyTitle: 'Technology',
-    technologyText: 'HTML, CSS and vanilla JavaScript on the client; Node.js, Express and SQLite locally. No external frontend frameworks, advertising trackers or third-party payment processors.',
+    technologyText: 'HTML, CSS and React on the client; Next.js, Node.js, Express and SQLite locally. No advertising trackers or third-party payment processors.',
     fontsTitle: 'Typography',
     fontsText: 'Local webfonts are used under the SIL Open Font License. Details are included with the font files.',
     finalTitle: 'A note on the reference',
@@ -120,7 +120,7 @@ const CREDITS = {
       ['Detail jendela katedral', 'https://www.pexels.com/photo/32160193/']
     ],
     technologyTitle: 'Teknologi',
-    technologyText: 'HTML, CSS, dan JavaScript murni di klien; Node.js, Express, dan SQLite di lokal. Tanpa framework frontend eksternal, pelacak iklan, atau pemroses pembayaran pihak ketiga.',
+    technologyText: 'HTML, CSS, dan React di klien; Next.js, Node.js, Express, dan SQLite di lokal. Tanpa pelacak iklan atau pemroses pembayaran pihak ketiga.',
     fontsTitle: 'Tipografi',
     fontsText: 'Webfont lokal digunakan di bawah SIL Open Font License. Detail disertakan bersama file font.',
     finalTitle: 'Catatan tentang referensi',

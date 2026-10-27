@@ -8,6 +8,7 @@ export type PageInfo = {
 const HOME: PageInfo = { pageKey: 'home', bodyClass: 'page-home', activeNav: 'home', scripts: [] };
 
 export function resolvePage(pathname: string): PageInfo {
+  if (pathname.length > 1 && pathname.endsWith('/')) pathname = pathname.slice(0, -1);
   if (pathname === '/') return HOME;
 
   if (pathname === '/shop') return { pageKey: 'shop', bodyClass: 'page-shop', activeNav: 'shop', scripts: ['/js/shop.js'] };

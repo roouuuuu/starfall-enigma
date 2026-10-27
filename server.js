@@ -13,7 +13,15 @@ const dev = process.env.NODE_ENV !== 'production';
 // Storefront routes that Next.js owns. Everything else — the admin workspace,
 // /api/*, /css, /js and /assets — is still served by the Express app.
 // Add a path here when its EJS page has been ported.
-const NEXT_PATHS = [/^\/$/];
+const NEXT_PATHS = [
+  /^\/$/,
+  /^\/journal(?:\/[^/]+)?\/?$/,
+  /^\/about\/?$/,
+  /^\/stores\/?$/,
+  /^\/client-care\/?$/,
+  /^\/legal\/?$/,
+  /^\/credits\/?$/
+];
 
 const SESSION_COOKIE_OPTIONS = {
   name: SESSION_COOKIE,
