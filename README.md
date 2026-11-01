@@ -10,11 +10,11 @@ The brand, product catalogue, product copy, SVG packshots and visual direction a
 
 ## Requirements
 
-- Node.js **22.5 or newer** (`node:sqlite` is built in). Node 24 LTS or newer is recommended.
+- Node.js **22.5 or newer** (Next.js 16 and the `libsql` client need a modern runtime). Node 24 LTS or newer is recommended.
 - npm.
 - No external database or paid API is required. Next.js and React are the only build tooling.
 
-No environment file is loaded automatically by the Express side. The Next.js side reads `.env.local` / `.env` in the usual Next.js way, so `TURSO_*` values can live there; shell variables still win.
+Both entry points load `.env.local` from the project root. The Next.js side also reads `.env` in the usual Next.js way; the Express side uses a small loader for `.env.local`. Variables already present in the shell, systemd or pm2 always win.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
