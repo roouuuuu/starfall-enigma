@@ -3,6 +3,9 @@
 const http = require('node:http');
 const next = require('next');
 
+const { loadEnv } = require('./src/env');
+loadEnv();
+
 const { createApp } = require('./src/server');
 const { SESSION_COOKIE, SESSION_TTL_MS, createSession } = require('./src/auth');
 const { parseCookies, hashToken, cookie, appendCookie } = require('./src/utils');

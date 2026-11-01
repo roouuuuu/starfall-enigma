@@ -2,33 +2,134 @@
 
 const fs = require('fs');
 const path = require('path');
-const { DatabaseSync } = process.getBuiltinModule('node:sqlite');
+const Database = require('libsql');
 
 // process.cwd() keeps this module working when Next bundles it, because a
 // bundled __dirname no longer points at the repository.
 const ROOT = path.resolve(process.env.STARFALL_ROOT || process.cwd());
 const DEFAULT_DB_PATH = path.join(ROOT, 'data', 'starfall.sqlite');
 let instance = null;
-let instancePath = null;
+let instanceKey = null;
+
+function normalizeFileUrl(value) {
+  const raw = String(value).slice('file:'.length);
+  if (!raw) return DEFAULT_DB_PATH;
+  if (path.isAbsolute(raw)) return raw;
+  return path.resolve(ROOT, raw);
+}
+
+/**
+ * DB_PATH always wins, which keeps tests and isolated demos on their own file.
+ * Without it, a libsql:// URL (or any remote URL) selects Turso; a file: URL
+ * or no URL at all selects the local SQLite file.
+ */
+function resolveTarget(dbPath = process.env.DB_PATH) {
+  if (dbPath) {
+    const target = path.resolve(ROOT, dbPath);
+    return { kind: 'file', path: target, key: `file:${target}` };
+  }
+
+  const url = String(process.env.TURSO_DATABASE_URL || '').trim();
+  if (url.startsWith('file:')) {
+    const target = normalizeFileUrl(url);
+    return { kind: 'file', path: target, key: `file:${target}` };
+  }
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(url)) {
+    return {
+      kind: 'remote',
+      url,
+      authToken: process.env.TURSO_AUTH_TOKEN || undefined,
+      key: `remote:${url}`
+    };
+  }
+
+  return { kind: 'file', path: DEFAULT_DB_PATH, key: `file:${DEFAULT_DB_PATH}` };
+}
 
 function resolveDbPath(dbPath = process.env.DB_PATH) {
-  return dbPath ? path.resolve(ROOT, dbPath) : DEFAULT_DB_PATH;
+  return resolveTarget(dbPath).kind === 'file'
+    ? resolveTarget(dbPath).path
+    : DEFAULT_DB_PATH;
 }
 
 function nowIso() {
   return new Date().toISOString();
 }
 
-function openDatabase(dbPath) {
-  const target = resolveDbPath(dbPath);
-  fs.mkdirSync(path.dirname(target), { recursive: true });
-  const db = new DatabaseSync(target);
-  db.exec('PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
+// libsql exposes a better-sqlite3-style API but adds an enumerable _metadata
+// field to rows and rejects booleans. Normalise both so the Express admin and
+// the existing JSON/CSV endpoints behave exactly like node:sqlite did.
+function normalizeValue(value) {
+  if (value === undefined) return null;
+  if (typeof value === 'boolean') return value ? 1 : 0;
+  if (value instanceof Date) return value.toISOString();
+  return value;
+}
+
+function normalizeArgs(args) {
+  if (
+    args.length === 1 &&
+    args[0] &&
+    typeof args[0] === 'object' &&
+    !Array.isArray(args[0]) &&
+    !Buffer.isBuffer(args[0]) &&
+    !(args[0] instanceof Date)
+  ) {
+    return [Object.fromEntries(Object.entries(args[0]).map(([key, value]) => [key, normalizeValue(value)]))];
+  }
+  return args.map(normalizeValue);
+}
+
+function cleanRow(row) {
+  if (row && typeof row === 'object' && '_metadata' in row) delete row._metadata;
+  return row;
+}
+
+function wrapDatabase(db, target) {
+  const prepare = db.prepare.bind(db);
+  db.prepare = (sql) => {
+    const statement = prepare(sql);
+    const get = statement.get.bind(statement);
+    const all = statement.all.bind(statement);
+    const run = statement.run.bind(statement);
+
+    statement.get = (...args) => cleanRow(get(...normalizeArgs(args)));
+    statement.all = (...args) => all(...normalizeArgs(args)).map(cleanRow);
+    statement.run = (...args) => {
+      const result = run(...normalizeArgs(args));
+      if (result && typeof result === 'object') {
+        delete result.duration;
+        delete result._metadata;
+      }
+      return result;
+    };
+    return statement;
+  };
+
+  Object.defineProperty(db, '__seRemote', { value: target.kind === 'remote' });
   return db;
 }
 
-function applySchema(db) {
-  const schema = fs.readFileSync(path.join(ROOT, 'src', 'schema.sql'), 'utf8');
+function openDatabase(target) {
+  if (target.kind === 'remote') {
+    return wrapDatabase(
+      new Database(target.url, { authToken: target.authToken }),
+      target
+    );
+  }
+
+  fs.mkdirSync(path.dirname(target.path), { recursive: true });
+  const db = new Database(target.path);
+  db.exec('PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
+  return wrapDatabase(db, target);
+}
+
+function applySchema(db, target) {
+  let schema = fs.readFileSync(path.join(ROOT, 'src', 'schema.sql'), 'utf8');
+  if (target.kind === 'remote') {
+    // Turso manages journaling and foreign keys; PRAGMA writes are local-only.
+    schema = schema.replace(/^PRAGMA .*$/gim, '');
+  }
   db.exec(schema);
 }
 
@@ -60,29 +161,36 @@ function seedDefaults(db) {
 }
 
 function getDb(dbPath) {
-  const target = resolveDbPath(dbPath);
-  if (!instance || instancePath !== target) {
+  const target = resolveTarget(dbPath);
+  if (!instance || instanceKey !== target.key) {
     if (instance) {
       try { instance.close(); } catch (_) { /* noop */ }
     }
     instance = openDatabase(target);
-    instancePath = target;
-    applySchema(instance);
+    instanceKey = target.key;
+    applySchema(instance, target);
     seedDefaults(instance);
   }
   return instance;
 }
 
-function resetDb(dbPath) {
-  const target = resolveDbPath(dbPath);
+function closeDb() {
   if (instance) {
     try { instance.close(); } catch (_) { /* noop */ }
-    instance = null;
-    instancePath = null;
   }
-  if (fs.existsSync(target)) fs.unlinkSync(target);
+  instance = null;
+  instanceKey = null;
+}
+
+function resetDb(dbPath) {
+  const target = resolveTarget(dbPath);
+  if (target.kind === 'remote') {
+    throw new Error('Cannot reset a remote libSQL database from this script.');
+  }
+  closeDb();
+  if (fs.existsSync(target.path)) fs.unlinkSync(target.path);
   for (const suffix of ['-wal', '-shm']) {
-    const sidecar = target + suffix;
+    const sidecar = target.path + suffix;
     if (fs.existsSync(sidecar)) fs.unlinkSync(sidecar);
   }
   return getDb(dbPath);
@@ -101,6 +209,9 @@ function setSetting(db, key, value) {
 }
 
 function transaction(db, fn) {
+  if (db.__seRemote && typeof db.transaction === 'function') {
+    return db.transaction(fn)();
+  }
   db.exec('BEGIN IMMEDIATE');
   try {
     const result = fn();
@@ -127,9 +238,14 @@ function nextNumber(db, prefix) {
   return `${prefix}-${date}-${sequence}${random}`;
 }
 
+function isRemote(db) {
+  return Boolean(db && db.__seRemote);
+}
+
 module.exports = {
   ROOT,
   getDb,
+  closeDb,
   resetDb,
   getSettings,
   setSetting,
@@ -137,5 +253,7 @@ module.exports = {
   audit,
   nowIso,
   nextNumber,
-  resolveDbPath
+  resolveDbPath,
+  resolveTarget,
+  isRemote
 };

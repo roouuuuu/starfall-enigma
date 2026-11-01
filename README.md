@@ -20,7 +20,7 @@ No environment file is loaded automatically by the Express side. The Next.js sid
 | --- | --- | --- |
 | `PORT` | `3000` | HTTP port |
 | `DB_PATH` | `data/starfall.sqlite` | SQLite path, resolved from the project root. It overrides `TURSO_DATABASE_URL`, which keeps tests and isolated demos on their own file |
-| `TURSO_DATABASE_URL` | `file:data/starfall.sqlite` | libSQL URL used by the Next.js storefront pages and API routes (`file:...` locally, `libsql://...` for Turso) |
+| `TURSO_DATABASE_URL` | `file:data/starfall.sqlite` | libSQL URL used by the Next.js storefront pages/API and the Express admin (`file:...` locally, `libsql://...` for Turso) |
 | `TURSO_AUTH_TOKEN` | unset | Turso auth token when `TURSO_DATABASE_URL` points at a remote database |
 | `COOKIE_SECURE` | unset | Set to `1` when serving over HTTPS so the session cookie is `Secure` |
 | `ADMIN_SLUG` | generated | Optional fixed private slug for the admin workspace (lowercase letters, digits, hyphens) |
@@ -50,7 +50,7 @@ npm run seed
 
 ### Turso / remote database
 
-The storefront pages and API routes use libSQL, so they can share a remote Turso database with the admin workspace once the admin migration is complete. Create the database in the Turso dashboard, then set `TURSO_DATABASE_URL` (`libsql://...`) and `TURSO_AUTH_TOKEN` in `.env.local` or in the Vercel/VPS environment.
+The storefront pages, API routes and the Express admin all use libSQL, so they can share one remote Turso database. Create the database in the Turso dashboard, then set `TURSO_DATABASE_URL` (`libsql://...`) and `TURSO_AUTH_TOKEN` in `.env.local` or in the Vercel/VPS environment.
 
 Seed a fresh Turso database with the same deterministic catalogue as the local seed:
 
@@ -62,9 +62,11 @@ The script reads `.env.local` unless the variables are already set in the shell.
 
 `DB_PATH` always wins over `TURSO_DATABASE_URL`, which keeps tests and isolated demos on their own SQLite file. On Vercel, never set `DB_PATH`.
 
+The Express entry point now loads `.env.local` too, so `npm start` and the Next.js storefront read the same URL. The admin connects to Turso through the synchronous `libsql` client; its backup endpoint returns a portable `.sql` dump when the database is remote, and the usual `.sqlite` file locally.
+
 ### Vercel storefront + VPS admin (Jalur A)
 
-The storefront is ready to run on Next.js alone: pages, storefront APIs, guest sessions, `/preferences`, `/go/:platform`, `/health`, `/robots.txt` and `/sitemap.xml` no longer need `server.js`. The Express admin still uses the local `node:sqlite` driver, so **do not point the admin at Turso yet**; finish the admin migration before the DNS cutover.
+The storefront is ready to run on Next.js alone: pages, storefront APIs, guest sessions, `/preferences`, `/go/:platform`, `/health`, `/robots.txt` and `/sitemap.xml` no longer need `server.js`. The Express admin now uses the same libSQL layer and can point at Turso, but the remote admin path has only been verified against a local file so far. Run it against a staging Turso database before the DNS cutover.
 
 Local Next-only smoke test (storefront only, no admin):
 
@@ -73,7 +75,7 @@ npm run build
 npm run start:next -- -p 3100
 ```
 
-The intended split after the admin migration:
+The intended split:
 
 - **Vercel**: Next.js storefront and storefront API, Node functions in the Singapore region (`sin1`).
 - **VPS**: Express admin at the private slug, ideally close to the Turso `sin` region.
@@ -88,6 +90,17 @@ ADMIN_BASE_URL=https://admin.example.com/ops-...
 COOKIE_SECURE=1
 SITE_URL=https://www.starfallenigma.com
 # Never set DB_PATH on Vercel.
+```
+
+VPS environment:
+
+```dotenv
+TURSO_DATABASE_URL=libsql://...
+TURSO_AUTH_TOKEN=...
+ADMIN_SLUG=ops-...
+ADMIN_BASE_URL=https://admin.example.com/ops-...
+COOKIE_SECURE=1
+# DB_PATH stays unset so the admin follows TURSO_DATABASE_URL.
 ```
 
 Run `npm run seed:turso` once against the remote database, deploy, then keep the cutover gated until the admin can read the same Turso data.

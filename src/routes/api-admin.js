@@ -20,7 +20,8 @@ const {
   isValidHttpUrl
 } = require('../utils');
 const { requireAdmin, rotateSessionForUser, hashPassword, verifyPassword } = require('../auth');
-const { getSettings, setSetting, ROOT } = require('../db');
+const { getSettings, setSetting, ROOT, isRemote } = require('../db');
+const { dumpDatabase } = require('../sql-dump');
 const { serializeOrder, updateOrderStatus, cancelOrder, createManualOrder, CHANNELS } = require('../order-service');
 
 const router = express.Router();
@@ -1030,10 +1031,22 @@ router.post('/settings/password', (req, res, next) => {
 router.get('/backup', (req, res, next) => {
   try {
     const db = dbOf(req);
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+
+    if (isRemote(db)) {
+      const filename = `starfall-backup-${stamp}.sql`;
+      const dump = dumpDatabase(db);
+      db.prepare(
+        `INSERT INTO audit_logs (user_id, action, entity, entity_id, detail, created_at)
+         VALUES (?, 'database.backup', 'database', '', ?, ?)`
+      ).run(Number(req.user.id), JSON.stringify({ filename, format: 'sql' }), new Date().toISOString());
+      res.attachment(filename);
+      return res.type('application/sql').send(dump);
+    }
+
+    const filename = `starfall-backup-${stamp}.sqlite`;
     const dir = path.join(ROOT, 'data', 'backups');
     fs.mkdirSync(dir, { recursive: true });
-    const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const filename = `starfall-backup-${stamp}.sqlite`;
     const target = path.join(dir, filename);
     const escaped = target.replaceAll("'", "''");
     db.exec(`VACUUM INTO '${escaped}'`);
